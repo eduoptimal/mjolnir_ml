@@ -1,0 +1,7 @@
+# Paths hidden from the remote explorer and whole-tree search.
+# Local agent tools still see them. `.mj/` is mandatory: it holds keys,
+# config and certificates. Edit the rest freely.
+.mj/
+.git/
+.agent_cache/
+.DS_Store

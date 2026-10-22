@@ -1,0 +1,10 @@
+Metadata-Version: 2.4
+Name: mjolnir-ml
+Version: 0.1.0
+Summary: Ω-certifiability harness: turn a fitted predictor (sklearn first) into a fail-closed decision model via @dsl policies.
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Provides-Extra: sklearn
+Requires-Dist: scikit-learn>=1.3; extra == "sklearn"
+Provides-Extra: test
+Requires-Dist: pytest>=8; extra == "test"

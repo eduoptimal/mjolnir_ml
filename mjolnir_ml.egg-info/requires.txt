@@ -1,0 +1,6 @@
+
+[sklearn]
+scikit-learn>=1.3
+
+[test]
+pytest>=8

@@ -1,0 +1,1100 @@
+{
+  "readiness": {
+    "schema": "mjolnir.ml.readiness/1",
+    "readiness_id": "sha256:3c2e87af91a96a4c87b4b60ca64bda728f6fde8ca9cfe3b31251c816081268e4",
+    "approved": true,
+    "gates": [
+      {
+        "name": "calibration_present",
+        "passed": true,
+        "value": true,
+        "threshold": "required",
+        "detail": "unknown is not zero: a policy needing conformal facts abstains without calibration"
+      },
+      {
+        "name": "overclaim",
+        "passed": true,
+        "value": 0,
+        "threshold": 0,
+        "detail": "claims on oracle-undecidable rows"
+      },
+      {
+        "name": "precision",
+        "passed": true,
+        "value": 1.0,
+        "threshold": 0.95,
+        "detail": "certified claims / claims"
+      },
+      {
+        "name": "recall",
+        "passed": true,
+        "value": 0.16666666666666666,
+        "threshold": 0.0,
+        "detail": "certified claims / decidable rows"
+      },
+      {
+        "name": "coverage",
+        "passed": true,
+        "value": 0.16666666666666666,
+        "threshold": 0.0,
+        "detail": "claims / rows"
+      },
+      {
+        "name": "abstain_rate",
+        "passed": true,
+        "value": 0.16666666666666666,
+        "threshold": 1.0,
+        "detail": "a deployment that abstains on everything is not one"
+      }
+    ],
+    "metrics": {
+      "n": 18,
+      "verdicts": {
+        "release": 3,
+        "ask": 12,
+        "deny": 0,
+        "abstain": 3
+      },
+      "abstain_causes": {
+        "uncovered (no rule fires)": 3
+      },
+      "claim_rate": 0.16666666666666666,
+      "abstain_rate": 0.16666666666666666,
+      "pair": {
+        "prec": 1.0,
+        "rec": 0.16666666666666666,
+        "n_claim": 3,
+        "n_cert": 3,
+        "n_A": 18,
+        "n": 18,
+        "n_overclaim": 0,
+        "n_missed": 15
+      },
+      "hazards": {
+        "schema": "mjolnir.ml.completeness/1",
+        "ledger_version": "hazard-ledger@1",
+        "ledger_digest": "sha256:b18543deb2444b18b21d25eef3faae1d856fe86c03cc53cc581a6a3840351a89",
+        "n": 18,
+        "n_release": 3,
+        "n_hazard": 0,
+        "n_caught": 0,
+        "n_false_certificate": 0,
+        "precision": 1.0,
+        "recall": null,
+        "coverage": 0.16666666666666666,
+        "precision_ci": [
+          0.4384939195509822,
+          1.0
+        ],
+        "recall_ci": [
+          null,
+          null
+        ],
+        "ceiling": null,
+        "within_ceiling": true,
+        "n_observable_hazard": 0,
+        "n_hidden_only": 0,
+        "recall_observable": null,
+        "recall_hidden_only": null,
+        "per_hazard": {}
+      },
+      "predictions": {
+        "n": 18,
+        "claims": 3,
+        "certified_share": null,
+        "mean_conf": null,
+        "mean_set_size": null,
+        "mean_interval_width": 217.32
+      },
+      "certificates": null
+    },
+    "digests": {
+      "policy": "sha256:e91c30ea207e8522b7455a6d3978fd495b577f58a1bca7c3e0914a1a746e968f",
+      "model": "sha256:b2fac7b2d0deb7bff739227c5941ca286543616bcccdeae265ed4700d16a83bf",
+      "calibration": "sha256:16d4215fb5aeed591f8758360b54049784722301ab262862e1b28218ee95fbff",
+      "alpha": 0.1,
+      "ledger": "sha256:b18543deb2444b18b21d25eef3faae1d856fe86c03cc53cc581a6a3840351a89"
+    },
+    "evidence": {
+      "schema": "mjolnir.ml.report/1",
+      "title": "readiness",
+      "generated_at": "2026-10-22T17:22:31Z",
+      "contract": {
+        "policy": "FlywheelPolicy",
+        "policy_digest": "sha256:e91c30ea207e8522b7455a6d3978fd495b577f58a1bca7c3e0914a1a746e968f",
+        "model": "RandomForestRegressor",
+        "model_digest": "sha256:b2fac7b2d0deb7bff739227c5941ca286543616bcccdeae265ed4700d16a83bf",
+        "calibration_digest": "sha256:16d4215fb5aeed591f8758360b54049784722301ab262862e1b28218ee95fbff",
+        "alpha": 0.1,
+        "adaptive": true,
+        "regime": "required",
+        "n_features": 10,
+        "features": [
+          "age",
+          "sex",
+          "bmi",
+          "bp",
+          "s1",
+          "s2",
+          "s3",
+          "s4",
+          "s5",
+          "s6"
+        ],
+        "statements": [
+          {
+            "code": "bmi_in_range",
+            "kind": "premise",
+            "requires": [
+              "bmi"
+            ],
+            "predicate": "bmi > -1.0",
+            "verdict": null
+          },
+          {
+            "code": "release_safe_band",
+            "kind": "release",
+            "requires": [
+              "lo",
+              "hi"
+            ],
+            "predicate": "lo >= 0.0 and hi <= 240.0",
+            "verdict": "release"
+          },
+          {
+            "code": "deny_high_band",
+            "kind": "rule",
+            "requires": [
+              "lo"
+            ],
+            "predicate": "lo > 240.0",
+            "verdict": "deny"
+          },
+          {
+            "code": "review_widening",
+            "kind": "rule",
+            "requires": [
+              "lo",
+              "hi"
+            ],
+            "predicate": "lo <= 240.0 and hi > 240.0",
+            "verdict": "ask"
+          }
+        ]
+      },
+      "decisions": {
+        "n": 18,
+        "verdicts": {
+          "release": 3,
+          "ask": 12,
+          "deny": 0,
+          "abstain": 3
+        },
+        "claim_rate": 0.16666666666666666,
+        "abstain_causes": {
+          "uncovered (no rule fires)": 3
+        }
+      },
+      "predictions": {
+        "n": 18,
+        "claims": 3,
+        "certified_share": null,
+        "mean_conf": null,
+        "mean_set_size": null,
+        "mean_interval_width": 217.32
+      },
+      "rows": [
+        {
+          "index": 0,
+          "verdict": "ask",
+          "basis": "review_widening",
+          "guarantee": "model_backed",
+          "p_positive": null,
+          "conf": null,
+          "pred": 252.28666666666666,
+          "lo": 143.62666666666667,
+          "hi": 360.94666666666666,
+          "set_size": null,
+          "say": "escalated by review_widening (lo=143.62666666666667, hi=360.94666666666666)"
+        },
+        {
+          "index": 1,
+          "verdict": "ask",
+          "basis": "review_widening",
+          "guarantee": "model_backed",
+          "p_positive": null,
+          "conf": null,
+          "pred": 159.10333333333332,
+          "lo": 50.44333333333333,
+          "hi": 267.7633333333333,
+          "set_size": null,
+          "say": "escalated by review_widening (lo=50.44333333333333, hi=267.7633333333333)"
+        },
+        {
+          "index": 2,
+          "verdict": "abstain",
+          "basis": "uncovered (no rule fires)",
+          "guarantee": "declared",
+          "p_positive": null,
+          "conf": null,
+          "pred": 99.85666666666667,
+          "lo": -8.803333333333327,
+          "hi": 208.51666666666665,
+          "set_size": null,
+          "say": "cannot decide: no policy statement fires for this prediction (uncovered is abstain, never release)"
+        },
+        {
+          "index": 3,
+          "verdict": "ask",
+          "basis": "review_widening",
+          "guarantee": "model_backed",
+          "p_positive": null,
+          "conf": null,
+          "pred": 198.53666666666666,
+          "lo": 89.87666666666667,
+          "hi": 307.19666666666666,
+          "set_size": null,
+          "say": "escalated by review_widening (lo=89.87666666666667, hi=307.19666666666666)"
+        },
+        {
+          "index": 4,
+          "verdict": "ask",
+          "basis": "review_widening",
+          "guarantee": "model_backed",
+          "p_positive": null,
+          "conf": null,
+          "pred": 233.54,
+          "lo": 124.88,
+          "hi": 342.2,
+          "set_size": null,
+          "say": "escalated by review_widening (lo=124.88, hi=342.2)"
+        },
+        {
+          "index": 5,
+          "verdict": "ask",
+          "basis": "review_widening",
+          "guarantee": "model_backed",
+          "p_positive": null,
+          "conf": null,
+          "pred": 134.79,
+          "lo": 26.129999999999995,
+          "hi": 243.45,
+          "set_size": null,
+          "say": "escalated by review_widening (lo=26.129999999999995, hi=243.45)"
+        },
+        {
+          "index": 6,
+          "verdict": "ask",
+          "basis": "review_widening",
+          "guarantee": "model_backed",
+          "p_positive": null,
+          "conf": null,
+          "pred": 245.21,
+          "lo": 136.55,
+          "hi": 353.87,
+          "set_size": null,
+          "say": "escalated by review_widening (lo=136.55, hi=353.87)"
+        },
+        {
+          "index": 7,
+          "verdict": "ask",
+          "basis": "review_widening",
+          "guarantee": "model_backed",
+          "p_positive": null,
+          "conf": null,
+          "pred": 196.67,
+          "lo": 88.00999999999999,
+          "hi": 305.33,
+          "set_size": null,
+          "say": "escalated by review_widening (lo=88.00999999999999, hi=305.33)"
+        },
+        {
+          "index": 8,
+          "verdict": "ask",
+          "basis": "review_widening",
+          "guarantee": "model_backed",
+          "p_positive": null,
+          "conf": null,
+          "pred": 217.63,
+          "lo": 108.97,
+          "hi": 326.28999999999996,
+          "set_size": null,
+          "say": "escalated by review_widening (lo=108.97, hi=326.28999999999996)"
+        },
+        {
+          "index": 9,
+          "verdict": "abstain",
+          "basis": "uncovered (no rule fires)",
+          "guarantee": "declared",
+          "p_positive": null,
+          "conf": null,
+          "pred": 99.38666666666667,
+          "lo": -9.273333333333326,
+          "hi": 208.04666666666668,
+          "set_size": null,
+          "say": "cannot decide: no policy statement fires for this prediction (uncovered is abstain, never release)"
+        },
+        {
+          "index": 10,
+          "verdict": "ask",
+          "basis": "review_widening",
+          "guarantee": "model_backed",
+          "p_positive": null,
+          "conf": null,
+          "pred": 146.65666666666667,
+          "lo": 37.99666666666667,
+          "hi": 255.31666666666666,
+          "set_size": null,
+          "say": "escalated by review_widening (lo=37.99666666666667, hi=255.31666666666666)"
+        },
+        {
+          "index": 11,
+          "verdict": "abstain",
+          "basis": "uncovered (no rule fires)",
+          "guarantee": "declared",
+          "p_positive": null,
+          "conf": null,
+          "pred": 83.4,
+          "lo": -25.25999999999999,
+          "hi": 192.06,
+          "set_size": null,
+          "say": "cannot decide: no policy statement fires for this prediction (uncovered is abstain, never release)"
+        },
+        {
+          "index": 12,
+          "verdict": "ask",
+          "basis": "review_widening",
+          "guarantee": "model_backed",
+          "p_positive": null,
+          "conf": null,
+          "pred": 251.68333333333334,
+          "lo": 143.02333333333334,
+          "hi": 360.34333333333336,
+          "set_size": null,
+          "say": "escalated by review_widening (lo=143.02333333333334, hi=360.34333333333336)"
+        },
+        {
+          "index": 13,
+          "verdict": "release",
+          "basis": "release_safe_band",
+          "guarantee": "model_backed",
+          "p_positive": null,
+          "conf": null,
+          "pred": 121.99666666666667,
+          "lo": 13.336666666666673,
+          "hi": 230.65666666666667,
+          "set_size": null,
+          "say": "released by release_safe_band (lo=13.336666666666673, hi=230.65666666666667)"
+        },
+        {
+          "index": 14,
+          "verdict": "ask",
+          "basis": "review_widening",
+          "guarantee": "model_backed",
+          "p_positive": null,
+          "conf": null,
+          "pred": 171.57,
+          "lo": 62.91,
+          "hi": 280.23,
+          "set_size": null,
+          "say": "escalated by review_widening (lo=62.91, hi=280.23)"
+        },
+        {
+          "index": 15,
+          "verdict": "release",
+          "basis": "release_safe_band",
+          "guarantee": "model_backed",
+          "p_positive": null,
+          "conf": null,
+          "pred": 130.42,
+          "lo": 21.75999999999999,
+          "hi": 239.07999999999998,
+          "set_size": null,
+          "say": "released by release_safe_band (lo=21.75999999999999, hi=239.07999999999998)"
+        },
+        {
+          "index": 16,
+          "verdict": "ask",
+          "basis": "review_widening",
+          "guarantee": "model_backed",
+          "p_positive": null,
+          "conf": null,
+          "pred": 156.07333333333332,
+          "lo": 47.41333333333333,
+          "hi": 264.73333333333335,
+          "set_size": null,
+          "say": "escalated by review_widening (lo=47.41333333333333, hi=264.73333333333335)"
+        },
+        {
+          "index": 17,
+          "verdict": "release",
+          "basis": "release_safe_band",
+          "guarantee": "model_backed",
+          "p_positive": null,
+          "conf": null,
+          "pred": 109.08333333333333,
+          "lo": 0.423333333333332,
+          "hi": 217.74333333333334,
+          "set_size": null,
+          "say": "released by release_safe_band (lo=0.423333333333332, hi=217.74333333333334)"
+        }
+      ],
+      "pair": {
+        "pair": {
+          "prec": 1.0,
+          "rec": 0.16666666666666666,
+          "n_claim": 3,
+          "n_cert": 3,
+          "n_A": 18,
+          "n": 18,
+          "n_overclaim": 0,
+          "n_missed": 15
+        },
+        "prec_ci": [
+          0.4384939195509822,
+          1.0
+        ],
+        "rec_ci": [
+          0.058364704004657555,
+          0.3922249963835924
+        ],
+        "verdicts": {
+          "release": 3,
+          "ask": 12,
+          "deny": 0,
+          "abstain": 3
+        },
+        "overclaim_rate": 0.0,
+        "degenerate": {
+          "ALWAYS": {
+            "prec": 0.8888888888888888,
+            "rec": 0.8888888888888888,
+            "n_claim": 18,
+            "n_cert": 16,
+            "n_A": 18,
+            "n": 18,
+            "n_overclaim": 0,
+            "n_missed": 0
+          },
+          "NEVER": {
+            "prec": null,
+            "rec": 0.0,
+            "n_claim": 0,
+            "n_cert": 0,
+            "n_A": 18,
+            "n": 18,
+            "n_overclaim": 0,
+            "n_missed": 18
+          }
+        }
+      },
+      "hazards": {
+        "schema": "mjolnir.ml.completeness/1",
+        "ledger_version": "hazard-ledger@1",
+        "ledger_digest": "sha256:b18543deb2444b18b21d25eef3faae1d856fe86c03cc53cc581a6a3840351a89",
+        "n": 18,
+        "n_release": 3,
+        "n_hazard": 0,
+        "n_caught": 0,
+        "n_false_certificate": 0,
+        "precision": 1.0,
+        "recall": null,
+        "coverage": 0.16666666666666666,
+        "precision_ci": [
+          0.4384939195509822,
+          1.0
+        ],
+        "recall_ci": [
+          null,
+          null
+        ],
+        "ceiling": null,
+        "within_ceiling": true,
+        "n_observable_hazard": 0,
+        "n_hidden_only": 0,
+        "recall_observable": null,
+        "recall_hidden_only": null,
+        "per_hazard": {}
+      },
+      "sample_size": 0
+    },
+    "created_at": "2026-10-22T17:22:31Z",
+    "signature": null
+  },
+  "config": {
+    "threshold": 240.0,
+    "hazard_age": 0.1,
+    "cal_mae": 49.82356060606062,
+    "alpha": 0.1,
+    "batches": [
+      0,
+      12,
+      24,
+      36,
+      48,
+      60
+    ]
+  },
+  "records": [
+    {
+      "batch": 1,
+      "n": 12,
+      "alpha": 0.060416666666666674,
+      "status": {
+        "schema": "mjolnir.ml.live/1",
+        "n": 12,
+        "batches": [
+          1
+        ],
+        "verdicts": {
+          "release": 0,
+          "ask": 10,
+          "deny": 0,
+          "abstain": 2
+        },
+        "claim_rate": 0.0,
+        "abstain_causes": {
+          "uncovered": 2
+        },
+        "coverage": 0.8333333333333334,
+        "coverage_n": 12,
+        "mae": 56.32,
+        "accuracy": 0.0,
+        "released_hazards": 0,
+        "hazard_precision": null,
+        "contained": null,
+        "review_queue": [
+          {
+            "certificate_id": "sha256:a94381818e21d7f50f922938bf3aca70c885fd286cf942d59a518541a508289f",
+            "batch": 1,
+            "reason": "uncovered",
+            "say": "cannot decide: no policy statement fires for this prediction (uncovered is abstain, never release)"
+          },
+          {
+            "certificate_id": "sha256:58044e84beecbca92d5edd9f0599800f8c47909fea78f4d7d3255c7e2d3bf5d4",
+            "batch": 1,
+            "reason": "uncovered",
+            "say": "cannot decide: no policy statement fires for this prediction (uncovered is abstain, never release)"
+          }
+        ],
+        "versions": [
+          {
+            "policy_digest": "sha256:e91c30ea207e8522b7455a6d3978fd495b577f58a1bca7c3e0914a1a746e968f",
+            "model_digest": "sha256:b2fac7b2d0deb7bff739227c5941ca286543616bcccdeae265ed4700d16a83bf",
+            "calibration_digest": "sha256:16d4215fb5aeed591f8758360b54049784722301ab262862e1b28218ee95fbff"
+          }
+        ]
+      },
+      "detections": [],
+      "actions": []
+    },
+    {
+      "batch": 2,
+      "n": 12,
+      "alpha": 0.08041666666666675,
+      "status": {
+        "schema": "mjolnir.ml.live/1",
+        "n": 12,
+        "batches": [
+          2
+        ],
+        "verdicts": {
+          "release": 2,
+          "ask": 8,
+          "deny": 0,
+          "abstain": 2
+        },
+        "claim_rate": 0.16666666666666666,
+        "abstain_causes": {
+          "uncovered": 2
+        },
+        "coverage": 0.9166666666666666,
+        "coverage_n": 12,
+        "mae": 48.217777777777776,
+        "accuracy": 0.0,
+        "released_hazards": 0,
+        "hazard_precision": 1.0,
+        "contained": null,
+        "review_queue": [
+          {
+            "certificate_id": "sha256:546f4c28af6cb82bc9f86ff7b985f32327ae3a376a2a3f2bbcd0e10a87e360e2",
+            "batch": 2,
+            "reason": "uncovered",
+            "say": "cannot decide: no policy statement fires for this prediction (uncovered is abstain, never release)"
+          },
+          {
+            "certificate_id": "sha256:d1bf29766866af4b6f7e3c01c3861256b553d639cac4d4adeade0556e384a7ab",
+            "batch": 2,
+            "reason": "uncovered",
+            "say": "cannot decide: no policy statement fires for this prediction (uncovered is abstain, never release)"
+          }
+        ],
+        "versions": [
+          {
+            "policy_digest": "sha256:e91c30ea207e8522b7455a6d3978fd495b577f58a1bca7c3e0914a1a746e968f",
+            "model_digest": "sha256:b2fac7b2d0deb7bff739227c5941ca286543616bcccdeae265ed4700d16a83bf",
+            "calibration_digest": "sha256:16d4215fb5aeed591f8758360b54049784722301ab262862e1b28218ee95fbff"
+          }
+        ]
+      },
+      "detections": [
+        {
+          "name": "error_high",
+          "lever": "proposer",
+          "metric": "abs_error",
+          "alarm": true,
+          "severity": "warning",
+          "stat": 84.03386363636392,
+          "threshold": 10.0,
+          "target": 49.82356060606062,
+          "n": 24,
+          "mde": 2.0,
+          "detail": "CUSUM 84.03 vs h=10.00; target=49.824, slack=2.000, n=24, MDE=2.0"
+        }
+      ],
+      "actions": []
+    },
+    {
+      "batch": 3,
+      "n": 12,
+      "alpha": 0.10041666666666682,
+      "status": {
+        "schema": "mjolnir.ml.live/1",
+        "n": 12,
+        "batches": [
+          3
+        ],
+        "verdicts": {
+          "release": 4,
+          "ask": 7,
+          "deny": 0,
+          "abstain": 1
+        },
+        "claim_rate": 0.3333333333333333,
+        "abstain_causes": {
+          "uncovered": 1
+        },
+        "coverage": 0.9166666666666666,
+        "coverage_n": 12,
+        "mae": 63.53333333333333,
+        "accuracy": 0.0,
+        "released_hazards": 0,
+        "hazard_precision": 1.0,
+        "contained": null,
+        "review_queue": [
+          {
+            "certificate_id": "sha256:eeebf37d74e8f3aadff270f735417b1c2455c218c308d1d245c1b7da6959aa6b",
+            "batch": 3,
+            "reason": "uncovered",
+            "say": "cannot decide: no policy statement fires for this prediction (uncovered is abstain, never release)"
+          }
+        ],
+        "versions": [
+          {
+            "policy_digest": "sha256:e91c30ea207e8522b7455a6d3978fd495b577f58a1bca7c3e0914a1a746e968f",
+            "model_digest": "sha256:b2fac7b2d0deb7bff739227c5941ca286543616bcccdeae265ed4700d16a83bf",
+            "calibration_digest": "sha256:16d4215fb5aeed591f8758360b54049784722301ab262862e1b28218ee95fbff"
+          }
+        ]
+      },
+      "detections": [],
+      "actions": []
+    },
+    {
+      "batch": 4,
+      "n": 12,
+      "alpha": 0.057575757575757586,
+      "status": {
+        "schema": "mjolnir.ml.live/1",
+        "n": 12,
+        "batches": [
+          4
+        ],
+        "verdicts": {
+          "release": 1,
+          "ask": 11,
+          "deny": 0,
+          "abstain": 0
+        },
+        "claim_rate": 0.08333333333333333,
+        "abstain_causes": {},
+        "coverage": 0.8333333333333334,
+        "coverage_n": 12,
+        "mae": 78.10972222222222,
+        "accuracy": 0.0,
+        "released_hazards": 1,
+        "hazard_precision": 0.0,
+        "contained": {
+          "containment_id": "sha256:ad0d4f1a8a2d1d5971971a353ad0da0b95fc23c0cca6610b15ab3bc81f75b361",
+          "reason": "1 release(s) on external hazard rows",
+          "batch": 4,
+          "at": "2026-10-22T17:22:33Z"
+        },
+        "review_queue": [],
+        "versions": [
+          {
+            "policy_digest": "sha256:e91c30ea207e8522b7455a6d3978fd495b577f58a1bca7c3e0914a1a746e968f",
+            "model_digest": "sha256:b2fac7b2d0deb7bff739227c5941ca286543616bcccdeae265ed4700d16a83bf",
+            "calibration_digest": "sha256:16d4215fb5aeed591f8758360b54049784722301ab262862e1b28218ee95fbff"
+          }
+        ]
+      },
+      "detections": [
+        {
+          "name": "abstain_high",
+          "lever": "contract",
+          "metric": "abstain",
+          "alarm": true,
+          "severity": "warning",
+          "stat": 5.5500000000000025,
+          "threshold": 5.0,
+          "target": 0.2,
+          "n": 48,
+          "mde": 0.05,
+          "detail": "CUSUM 5.55 vs h=5.00; target=0.200, slack=0.010, n=48, MDE=0.05"
+        },
+        {
+          "name": "hazard_release",
+          "lever": "contract",
+          "metric": "hazard_release",
+          "alarm": true,
+          "severity": "critical",
+          "stat": 1.0,
+          "threshold": 0.0,
+          "target": 0.0,
+          "n": 48,
+          "mde": 0.0,
+          "detail": "1 release(s) on external hazard rows"
+        }
+      ],
+      "actions": [
+        {
+          "containment_id": "sha256:ad0d4f1a8a2d1d5971971a353ad0da0b95fc23c0cca6610b15ab3bc81f75b361",
+          "reason": "1 release(s) on external hazard rows",
+          "batch": 4,
+          "at": "2026-10-22T17:22:33Z",
+          "kind": "containment"
+        }
+      ]
+    },
+    {
+      "batch": 5,
+      "n": 12,
+      "alpha": 0.04689655172413794,
+      "status": {
+        "schema": "mjolnir.ml.live/1",
+        "n": 12,
+        "batches": [
+          5
+        ],
+        "verdicts": {
+          "release": 0,
+          "ask": 12,
+          "deny": 0,
+          "abstain": 0
+        },
+        "claim_rate": 0.0,
+        "abstain_causes": {},
+        "coverage": 0.8333333333333334,
+        "coverage_n": 12,
+        "mae": 141.98194444444445,
+        "accuracy": 0.0,
+        "released_hazards": 0,
+        "hazard_precision": null,
+        "contained": null,
+        "review_queue": [],
+        "versions": [
+          {
+            "policy_digest": "sha256:e91c30ea207e8522b7455a6d3978fd495b577f58a1bca7c3e0914a1a746e968f",
+            "model_digest": "sha256:b2fac7b2d0deb7bff739227c5941ca286543616bcccdeae265ed4700d16a83bf",
+            "calibration_digest": "sha256:16d4215fb5aeed591f8758360b54049784722301ab262862e1b28218ee95fbff"
+          },
+          {
+            "policy_digest": "sha256:54aab69045930f25ae91c8b8bdf7f0038ac5df9ea25664d20bff5143df45a396",
+            "model_digest": "sha256:b2fac7b2d0deb7bff739227c5941ca286543616bcccdeae265ed4700d16a83bf",
+            "calibration_digest": "sha256:16d4215fb5aeed591f8758360b54049784722301ab262862e1b28218ee95fbff"
+          }
+        ]
+      },
+      "detections": [],
+      "actions": []
+    },
+    {
+      "batch": 6,
+      "n": 11,
+      "alpha": 0.006578947368421052,
+      "status": {
+        "schema": "mjolnir.ml.live/1",
+        "n": 11,
+        "batches": [
+          6
+        ],
+        "verdicts": {
+          "release": 0,
+          "ask": 9,
+          "deny": 1,
+          "abstain": 1
+        },
+        "claim_rate": 0.09090909090909091,
+        "abstain_causes": {
+          "uncovered": 1
+        },
+        "coverage": 0.8181818181818182,
+        "coverage_n": 11,
+        "mae": 103.92636363636365,
+        "accuracy": 0.0,
+        "released_hazards": 0,
+        "hazard_precision": null,
+        "contained": null,
+        "review_queue": [
+          {
+            "certificate_id": "sha256:128d8227d45c844ada1ce55794ac27fe4de984d33738f334f41cc8eee1d8b448",
+            "batch": 6,
+            "reason": "uncovered",
+            "say": "cannot decide: no policy statement fires for this prediction (uncovered is abstain, never release)"
+          }
+        ],
+        "versions": [
+          {
+            "policy_digest": "sha256:e91c30ea207e8522b7455a6d3978fd495b577f58a1bca7c3e0914a1a746e968f",
+            "model_digest": "sha256:b2fac7b2d0deb7bff739227c5941ca286543616bcccdeae265ed4700d16a83bf",
+            "calibration_digest": "sha256:16d4215fb5aeed591f8758360b54049784722301ab262862e1b28218ee95fbff"
+          },
+          {
+            "policy_digest": "sha256:54aab69045930f25ae91c8b8bdf7f0038ac5df9ea25664d20bff5143df45a396",
+            "model_digest": "sha256:b2fac7b2d0deb7bff739227c5941ca286543616bcccdeae265ed4700d16a83bf",
+            "calibration_digest": "sha256:16d4215fb5aeed591f8758360b54049784722301ab262862e1b28218ee95fbff"
+          }
+        ]
+      },
+      "detections": [],
+      "actions": []
+    }
+  ],
+  "actions": [
+    {
+      "containment_id": "sha256:ad0d4f1a8a2d1d5971971a353ad0da0b95fc23c0cca6610b15ab3bc81f75b361",
+      "reason": "1 release(s) on external hazard rows",
+      "batch": 4,
+      "at": "2026-10-22T17:22:33Z",
+      "kind": "containment"
+    },
+    {
+      "kind": "promotion",
+      "batch": 4,
+      "approved": true,
+      "reason": "promoted",
+      "evaluation": {
+        "change_digest": "sha256:1d7877d269792d48c89c4b567d5aeff9608ae89b146d5db456183973a1dc6946",
+        "passed": true,
+        "may_loosen": false,
+        "added_releases": 0,
+        "gates": [
+          {
+            "name": "hazard_releases_not_increased",
+            "passed": true,
+            "before": 1,
+            "after": 0
+          },
+          {
+            "name": "precision_non_regression",
+            "passed": true,
+            "before": 0.7142857142857143,
+            "after": 0.8571428571428571
+          },
+          {
+            "name": "recall_non_regression",
+            "passed": true,
+            "before": 0.10416666666666667,
+            "after": 0.125
+          },
+          {
+            "name": "improves_something",
+            "passed": true,
+            "before": null,
+            "after": null
+          }
+        ],
+        "before": {
+          "claims": 7,
+          "releases": 7,
+          "released_hazards": 1,
+          "coverage": 0.14583333333333334,
+          "precision": 0.7142857142857143,
+          "recall": 0.10416666666666667,
+          "n_observed": 48
+        },
+        "after": {
+          "claims": 7,
+          "releases": 6,
+          "released_hazards": 0,
+          "coverage": 0.14583333333333334,
+          "precision": 0.8571428571428571,
+          "recall": 0.125,
+          "n_observed": 48
+        },
+        "n": 48,
+        "n_observed": 48
+      }
+    },
+    {
+      "kind": "uncontain",
+      "batch": 4,
+      "approver": "dr-owner",
+      "retracted": 48
+    }
+  ],
+  "retraction": {
+    "retraction_id": "sha256:1e4c030d292141dc95343847ad06807d8111fc56d54161abbb349f64118c69ec",
+    "reason": "decisions under v1 (missing age-band rule)",
+    "certificate_ids": [
+      "sha256:dc2fe805c2a7eb6297b15ea6acbac8bd8b86e3b74c245f8ddd6fb22867195e4a",
+      "sha256:a94381818e21d7f50f922938bf3aca70c885fd286cf942d59a518541a508289f",
+      "sha256:58044e84beecbca92d5edd9f0599800f8c47909fea78f4d7d3255c7e2d3bf5d4",
+      "sha256:1ac7e24924578ddbad5de3e96bf18242c85c491d8986b8a9fe6714f4fa97001f",
+      "sha256:0bfc765bffa37d76b8964928d8ce67181801b64b6aa17b4f94aac57d5e46fa46",
+      "sha256:dfaedf99dafc1f8fe997c0b5ce114075095f318d7a197b26ac667515ee419334",
+      "sha256:192529b41d408b8b951f79c31cdb4ab7d33770c567ef1071a0c6cc26f71eb4fb",
+      "sha256:00c7d3ceea1f6bd19287e38d130837f5954f41e65193f3081831f79879c776dd",
+      "sha256:fa30a79cb292e73128272df6cbddc8e740bf739c6bde32144611ba5ff056d4d1",
+      "sha256:fa75db59a2644fa540513114afa8b47735853d31cb28c6ecfecfdcb77a0bf3ef",
+      "sha256:563e6872e1253e759995710450f63bc712454a2a0fec4bd60fe6c2cd745f059a",
+      "sha256:6d9c408e986f435a8bc6b9191d28b71349a217972762e007b76ea24117dd9248",
+      "sha256:b52ec83b501e0421ab99e03d61e7a1758026b9258224b22820b2596d6923a326",
+      "sha256:194aae3bcb09229cc9ab840332af758487ae69092b0963fffda276c153ee5f52",
+      "sha256:1f8c809921853997d9aaaf48b33077c4791408a64f2b5aa81d1719f99dd535b8",
+      "sha256:546f4c28af6cb82bc9f86ff7b985f32327ae3a376a2a3f2bbcd0e10a87e360e2",
+      "sha256:2ff76ba75d853a246a3e9275b9171a383f0b2016e63c4c29196726be8cb2840e",
+      "sha256:bf21f3d43a0b3792fbacf3a6a1a834f2651befb78782d3667661d3b5d955a190",
+      "sha256:7c82d9fbd66388f43f246d2d107c611c799b1b2d3d0f173770c3b473a6b20ccc",
+      "sha256:d1bf29766866af4b6f7e3c01c3861256b553d639cac4d4adeade0556e384a7ab",
+      "sha256:b88828ad07464d0effb7d1237479edb12c4311e98cd168e9c4a42a1be414953b",
+      "sha256:3df28a88205e0bd14816551fdd22ca6eb12038d5bb157c128ceae944644768c2",
+      "sha256:deb013510f2104acc432fedeb480897b5cccecadd32e42df9d33e2084eeaf718",
+      "sha256:b814994d0486c87b679f585ddb340c89633c507efcd622ae32fa3df9c5fab7c6",
+      "sha256:be89244f88b92627038b3051bd14b438731470c17595ff91a73e6621486c5e59",
+      "sha256:f7da7c8838fa434a83648b20d308b24d9e588957660d3ca063a1766979428521",
+      "sha256:16f331644097b86a2e02926adc9a110cc10cdf6b4934daf95189c8394cca5a24",
+      "sha256:3e32d7a439eb33871a8e23899ec4c4c7e59e68201a083ba52916d60f1816da47",
+      "sha256:5bb6433eb5343a650bba6b222e2352017fc7103eaddf6b5e79edcadbd814129a",
+      "sha256:5555e36f1aa829ac67054bed1da0bd39b6c806b9c8b5a8e02c3e82f8845f6f97",
+      "sha256:f304e6432719ad6e64344502b035cee915cbaf8d1ec887fefc1a95d69eebec6e",
+      "sha256:065a3fbb6ecb44ea292b6a087d0bf5ed4016b9360855c408aae2eeb6b0e89290",
+      "sha256:e96c202dc4dba9cae87c45ee40bb3f013b252586695fe6a97b5ab7e46e1ede03",
+      "sha256:90612b244a02526a0dc97e8b343d36ce3a6d45cfa4c00bb2ce8c9ca5e71baf66",
+      "sha256:eeebf37d74e8f3aadff270f735417b1c2455c218c308d1d245c1b7da6959aa6b",
+      "sha256:117912301dff854e7d14965ba2fb5546b8fb4fc5fe7fed934950000b5a579ceb",
+      "sha256:3a8e90276282daa699ebcf468b45a00b6a33fab2a6991d9a500a68d3f9330f27",
+      "sha256:eb39d0b43a9d68cb42abd00ccb745ee074bf492e452a6156523c7b7a903f3ca5",
+      "sha256:a60c8ce1bc82d52f677143e96cf33f42163f12f7d1ed8ef124300968e50982b8",
+      "sha256:9a21cf1eca9fd165b42e5a3d6025d294c34846660b4f52107336895b80a4ce42",
+      "sha256:c9722c74702f9a9a8495246a69602d4643721de0ec861179d54239a46f230da3",
+      "sha256:06b663a0054619304f80fb2f57b258edeb4ee6af845b4a6e5a19b02037941b93",
+      "sha256:1c991924fd54254bba55a9860ad238154194c500028ce6ebdf2032d309608510",
+      "sha256:943a44124b5572b454ba2effeddec9388d46f03ac6efe7fb3d05791c970e57d3",
+      "sha256:0b2ae045fde12ee78a439600a76ac078620a9f4f5dbe9cb643d337101d468d06",
+      "sha256:a019e1e33f2bcdb47521a98c55c700a6fd96da4ea21a23ab2990301b01a9045e",
+      "sha256:cf650ebe3dbcaf16b04ecab406f9bfe4a28d9907eee9c540af8e5509b5351abd",
+      "sha256:7aef23a4202b867816f3a094496ffbedc4e25fbbd0d1f05338a528d562139427"
+    ],
+    "at": "2026-10-22T17:22:33Z"
+  },
+  "final_status": {
+    "schema": "mjolnir.ml.live/1",
+    "n": 71,
+    "batches": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "verdicts": {
+      "release": 7,
+      "ask": 57,
+      "deny": 1,
+      "abstain": 6
+    },
+    "claim_rate": 0.11267605633802817,
+    "abstain_causes": {
+      "uncovered": 6
+    },
+    "coverage": 0.8591549295774648,
+    "coverage_n": 71,
+    "mae": 81.7062441314554,
+    "accuracy": 0.0,
+    "released_hazards": 1,
+    "hazard_precision": 0.8571428571428572,
+    "contained": null,
+    "review_queue": [
+      {
+        "certificate_id": "sha256:a94381818e21d7f50f922938bf3aca70c885fd286cf942d59a518541a508289f",
+        "batch": 1,
+        "reason": "uncovered",
+        "say": "cannot decide: no policy statement fires for this prediction (uncovered is abstain, never release)"
+      },
+      {
+        "certificate_id": "sha256:58044e84beecbca92d5edd9f0599800f8c47909fea78f4d7d3255c7e2d3bf5d4",
+        "batch": 1,
+        "reason": "uncovered",
+        "say": "cannot decide: no policy statement fires for this prediction (uncovered is abstain, never release)"
+      },
+      {
+        "certificate_id": "sha256:546f4c28af6cb82bc9f86ff7b985f32327ae3a376a2a3f2bbcd0e10a87e360e2",
+        "batch": 2,
+        "reason": "uncovered",
+        "say": "cannot decide: no policy statement fires for this prediction (uncovered is abstain, never release)"
+      },
+      {
+        "certificate_id": "sha256:d1bf29766866af4b6f7e3c01c3861256b553d639cac4d4adeade0556e384a7ab",
+        "batch": 2,
+        "reason": "uncovered",
+        "say": "cannot decide: no policy statement fires for this prediction (uncovered is abstain, never release)"
+      },
+      {
+        "certificate_id": "sha256:eeebf37d74e8f3aadff270f735417b1c2455c218c308d1d245c1b7da6959aa6b",
+        "batch": 3,
+        "reason": "uncovered",
+        "say": "cannot decide: no policy statement fires for this prediction (uncovered is abstain, never release)"
+      },
+      {
+        "certificate_id": "sha256:128d8227d45c844ada1ce55794ac27fe4de984d33738f334f41cc8eee1d8b448",
+        "batch": 6,
+        "reason": "uncovered",
+        "say": "cannot decide: no policy statement fires for this prediction (uncovered is abstain, never release)"
+      }
+    ],
+    "versions": [
+      {
+        "policy_digest": "sha256:e91c30ea207e8522b7455a6d3978fd495b577f58a1bca7c3e0914a1a746e968f",
+        "model_digest": "sha256:b2fac7b2d0deb7bff739227c5941ca286543616bcccdeae265ed4700d16a83bf",
+        "calibration_digest": "sha256:16d4215fb5aeed591f8758360b54049784722301ab262862e1b28218ee95fbff"
+      },
+      {
+        "policy_digest": "sha256:54aab69045930f25ae91c8b8bdf7f0038ac5df9ea25664d20bff5143df45a396",
+        "model_digest": "sha256:b2fac7b2d0deb7bff739227c5941ca286543616bcccdeae265ed4700d16a83bf",
+        "calibration_digest": "sha256:16d4215fb5aeed591f8758360b54049784722301ab262862e1b28218ee95fbff"
+      }
+    ]
+  },
+  "timeline": {
+    "containment_batch": 4,
+    "promotion_batch": 4,
+    "uncontain_batch": 4
+  },
+  "journal_verified": true,
+  "versions": [
+    {
+      "policy_digest": "sha256:e91c30ea207e8522b7455a6d3978fd495b577f58a1bca7c3e0914a1a746e968f",
+      "model_digest": "sha256:b2fac7b2d0deb7bff739227c5941ca286543616bcccdeae265ed4700d16a83bf",
+      "calibration_digest": "sha256:16d4215fb5aeed591f8758360b54049784722301ab262862e1b28218ee95fbff"
+    },
+    {
+      "policy_digest": "sha256:54aab69045930f25ae91c8b8bdf7f0038ac5df9ea25664d20bff5143df45a396",
+      "model_digest": "sha256:b2fac7b2d0deb7bff739227c5941ca286543616bcccdeae265ed4700d16a83bf",
+      "calibration_digest": "sha256:16d4215fb5aeed591f8758360b54049784722301ab262862e1b28218ee95fbff"
+    }
+  ],
+  "alpha_final": 0.006578947368421052
+}

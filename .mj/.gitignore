@@ -1,0 +1,4 @@
+# mj state — never commit sessions, the store, certificates, or secrets
+*
+!.gitignore
+!vscode/
