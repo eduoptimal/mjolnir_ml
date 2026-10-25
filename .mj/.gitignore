@@ -2,3 +2,10 @@
 *
 !.gitignore
 !vscode/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
