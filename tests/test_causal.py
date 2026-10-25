@@ -540,3 +540,51 @@ def test_determinism_of_bootstrap_intervals():
     ob(claim.id)
     b = ob.estimate(claim.id)
     assert a.as_dict() == b.as_dict()
+
+
+# ------------------------------------------------------- validation edges --
+def test_late_claim_requires_two_arms():
+    with pytest.raises(CausalError, match="two arms"):
+        CausalClaim(kind="late", outcome="y", treatment="x",
+                    instrument="z", criterion={"min": 0, "max": 1},
+                    assumptions=("monotonicity",))
+
+
+def test_strategy_as_dict_pins_every_parameter():
+    d = Strategy("backdoor", adjust=("z",), bins=5,
+                 min_stage_t=2.5).as_dict()
+    assert d["bins"] == 5
+    assert d["min_stage_t"] == 2.5
+
+
+def test_backdoor_refuses_treatment_values_outside_the_arms():
+    claim = CausalClaim(kind="ate", outcome="y", treatment="x",
+                        arms=(do("x", 1), do("x", 0)),
+                        criterion={"min": 0, "max": 10},
+                        assumptions=("no unmeasured confounding",))
+    cs = CausalSession([claim], table=[{"x": 0, "y": 0.0},
+                                       {"x": 1, "y": 1.0},
+                                       {"x": 2, "y": 2.0}])
+    oracle = cs.strategy(Strategy("backdoor", adjust=()))
+    assert oracle(claim.id) == DECLINED
+    assert oracle.reasons[claim.id] == "design_mismatch"
+
+
+def test_register_extends_the_corpus_for_new_claims():
+    cs = session()
+    new = CausalClaim(kind="ate", outcome="y", treatment="x1",
+                      arms=(do("x1", 1), do("x1", 0)),
+                      criterion={"min": float("-inf"), "max": float("inf")},
+                      assumptions=("declared",))
+    assert new.id not in cs.corpus
+    cs.register([new])
+    assert new.id in cs.corpus
+    assert cs.record()[new.id]["verdict"] == DECLINED
+
+    battery = CausalClaim(kind="ate", outcome="y", treatment="x1",
+                          arms=(do("x1", 1), do("x1", 0)),
+                          criterion={"min": -1, "max": 1},
+                          assumptions=("declared",))
+    cs.register([battery], corpus=False)
+    assert battery.id not in cs.corpus
+    assert battery.id in cs.oracle.registry

@@ -651,7 +651,7 @@ clones under `mjolnir_ml/vendors/`:
 ```bash
 cd mjolnir_research/mjolnir_ml
 uv pip install -e .            # or: pip install -e .
-python -m pytest tests -q      # 206 tests
+python -m pytest tests -q      # 210 tests
 python examples/quickstart.py
 # notebooks (already executed, outputs committed; pip install 'mjolnir-ml[examples]'):
 #   examples/random_forest_regressor.ipynb
@@ -698,7 +698,7 @@ mjolnir_ml/
                    conditional independence, journal event study; placebos as
                    twins; markov_class; CausalSession
   vendors/         the two clones
-tests/             206 tests: laws, DSL failures, calibration, ACI, costs,
+tests/             210 tests: laws, DSL failures, calibration, ACI, costs,
                    completeness, certificates, reports, sklearn integration,
                    notebook validity, model-ladder protocol, readiness,
                    live session/containment/change control, discovery laws,

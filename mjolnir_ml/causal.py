@@ -172,7 +172,7 @@ class CausalClaim:
                 f"a {self.kind} claim must DECLARE its assumptions (the "
                 f"untestable part is data, and an undeclared one is an "
                 f"opinion)")
-        if self.kind in ("association", "ate") and len(self.arms) != 2:
+        if self.kind in ("association", "ate", "late") and len(self.arms) != 2:
             raise CausalError(f"{self.kind} takes two arms: (x1, x0)")
         if self.kind == "late" and not self.instrument:
             raise CausalError("a late claim names its instrument")
@@ -316,7 +316,8 @@ class Strategy:
                 "placebo_offset": self.placebo_offset,
                 "bandwidth": self.bandwidth, "pair": self.pair,
                 "covariates": list(self.covariates),
-                "min_cell": self.min_cell, "seed": self.seed}
+                "bins": self.bins, "min_cell": self.min_cell,
+                "min_stage_t": self.min_stage_t, "seed": self.seed}
 
 
 # ---------------------------------------------------------------------- data --
@@ -609,6 +610,12 @@ def _backdoor(table: Table, claim: CausalClaim,
                                  f"{col!r} is not in the table")
     ys = table.numeric(y)
     xs = table.column(x)
+    outside = sorted({t for t in xs if t not in (a1.value, a0.value)})
+    if outside:
+        raise _NotIdentified(
+            "design_mismatch",
+            f"treatment {x!r} takes values {outside!r} outside the claimed "
+            f"arms ({a1.value!r}, {a0.value!r}); the binary ATE is undefined")
     if all(table.discrete(col) for col in s.adjust):
         cells = {}
         for i, row in enumerate(table.rows):
@@ -1078,9 +1085,26 @@ class CausalSession(DiscoverySession):
     def strategy(self, strategy: Strategy) -> StrategyOracle:
         return self._oracle.strategy(strategy)
 
-    def register(self, claims) -> "CausalSession":
+    def register(self, claims, *, corpus: bool = True) -> "CausalSession":
+        """Register claims for lookup. `corpus=True` (the public default) also
+        puts a new CLAIM under audit: it gets the prior strategy's verdict and
+        decline reason, so it can be a candidate target. Candidate batteries
+        (controls/tests/twins) pass `corpus=False`: they are looked up and
+        decided, but they are evidence about the capability, not part of the
+        operational census."""
+        claims = list(claims)
+        fresh = [c for c in claims if c.id not in self._claims]
         self._oracle.register(claims)
         self._claims = self._oracle.registry
+        if corpus and fresh:
+            prior = self._oracle.strategy(Strategy("none"))
+            if self._reasons is None:
+                self._reasons = {}
+            for claim in fresh:
+                if claim.id not in self._corpus:
+                    self._corpus[claim.id] = prior(claim.id)
+                    self._reasons[claim.id] = prior.reasons.get(
+                        claim.id, "unidentified")
         return self
 
     def assumptions(self) -> list:
@@ -1117,7 +1141,8 @@ class CausalSession(DiscoverySession):
         registered here so the candidate declares its own battery.
         """
         self.register([c for c in list(controls) + [t[0] for t in tests]
-                       if isinstance(c, CausalClaim) and c.id not in self._claims])
+                       if isinstance(c, CausalClaim) and c.id not in self._claims],
+                      corpus=False)
         tids = tuple(t.id if isinstance(t, CausalClaim) else t for t in targets)
         if not tids:
             raise CausalError("a candidate needs at least one target claim")
