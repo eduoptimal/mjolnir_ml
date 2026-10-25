@@ -43,6 +43,7 @@ class ReadinessThresholds:
     min_hazard_recall: float | None = None
     min_replay_rate: float = 0.99
     require_calibration: bool = True
+    require_reachable_rules: bool = False
 
 
 @dataclass(frozen=True)
@@ -99,7 +100,8 @@ def _sign(body: dict, key) -> str:
 
 def readiness(dm: DecisionModel, rows, *, safe, decidable, ledger=None,
               key=None, thresholds: ReadinessThresholds | None = None,
-              title: str = "readiness") -> ReadinessReport:
+              title: str = "readiness",
+              threshold: float | None = None) -> ReadinessReport:
     """Evaluate a deployment candidate. `safe` is the oracle's per-row answer
     (True: release is correct; False: deny is correct; None: undecided) and
     `decidable` marks rows the oracle settles. Without an oracle there is no
@@ -114,7 +116,7 @@ def readiness(dm: DecisionModel, rows, *, safe, decidable, ledger=None,
     th = thresholds or ReadinessThresholds()
 
     data = report_data(dm, rows, title=title, safe=safe, decidable=decidable,
-                       ledger=ledger, key=key, sample=0)
+                       ledger=ledger, key=key, sample=0, threshold=threshold)
     pair = data.get("pair", {}).get("pair", {})
     certs = data.get("certificates")
     haz = data.get("hazards")
@@ -123,6 +125,12 @@ def readiness(dm: DecisionModel, rows, *, safe, decidable, ledger=None,
     coverage = data["decisions"]["claim_rate"]
 
     gates: list[Gate] = []
+    if th.require_reachable_rules:
+        dead = data.get("feasibility", {}).get("dead_rules", [])
+        gates.append(Gate(
+            "rules_reachable", not dead, list(dead), "no dead rules",
+            "a declared rule that cannot fire is a contract defect; "
+            "see the FEASIBILITY section"))
     gates.append(Gate("calibration_present",
                       dm.kappa is not None if th.require_calibration else True,
                       dm.kappa is not None, "required" if th.require_calibration

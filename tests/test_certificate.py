@@ -19,10 +19,10 @@ class StubClf:
         return {"p_positive": self.p_positive}
 
     def predict(self, X):
-        return [1 if self.p_positive >= 0.5 else 0]
+        return [1 if self.p_positive >= 0.5 else 0] * len(X)
 
     def predict_proba(self, X):
-        return [[1 - self.p_positive, self.p_positive]]
+        return [[1 - self.p_positive, self.p_positive]] * len(X)
 
 
 FEATS = ("amount", "credit_limit")
@@ -115,3 +115,111 @@ def test_deny_and_ask_certificates_replay():
         cert = certify(d, key=KEY)
         assert cert["replayable"] is True
         assert verify_certificate(cert, key=KEY, policy=P.FraudPolicy)
+
+
+# ------------------------------------------- class-general replay (both) ----
+class StubReg:
+    """Fixed-prediction regressor: kappa supplies the interval, not the model."""
+
+    def __init__(self, pred=5.0):
+        self.pred = pred
+
+    def get_params(self, deep=False):
+        return {"pred": self.pred}
+
+    def predict(self, X):
+        return [self.pred] * len(X)
+
+
+FEATS_R = ("x",)
+ROW_R = {"x": 1.0}
+
+
+def test_regressor_interval_certificate_replays():
+    """lo/hi conformal facts flow through the SAME fact-table replay path."""
+    dm = DecisionModel(StubReg(5.0), P.RegressorPolicy, features=FEATS_R,
+                       regime="off")
+    dm.calibrate([{"x": i * 0.1} for i in range(40)],
+                 [i * 0.1 for i in range(40)], alpha=0.10)
+    d = dm.dispose(ROW_R)
+    assert {"lo", "hi"} <= set(d.facts)          # interval facts recorded
+    cert = certify(d, key=KEY)
+    assert cert["replayable"] is True
+    assert verify_certificate(cert, key=KEY, policy=P.RegressorPolicy,
+                              row=ROW_R) is True
+    # unsigned fact tamper on the interval -> replay re-derives the verdict
+    bad = dict(certify(d), facts=dict(cert["facts"], hi=999.0))
+    with pytest.raises(CertificateError, match="replay disagrees"):
+        verify_certificate(bad, policy=P.RegressorPolicy)
+
+
+def test_classifier_conformal_certificate_replays():
+    """certified/set_size conformal facts replay without the forest."""
+    dm = DecisionModel(StubClf(0.05), P.CertifiedPolicy, features=FEATS,
+                       regime="off")
+    dm.calibrate([{"amount": 1.0, "credit_limit": 10.0}] * 40,
+                 [0] * 40, alpha=0.10)
+    d = dm.dispose(ROW)
+    assert {"certified", "set_size"} <= set(d.facts)   # set facts recorded
+    cert = certify(d, key=KEY)
+    assert cert["replayable"] is True
+    assert verify_certificate(cert, key=KEY, policy=P.CertifiedPolicy,
+                              row=ROW) is True
+    bad = dict(certify(d), facts=dict(cert["facts"], certified=False))
+    with pytest.raises(CertificateError, match="replay disagrees"):
+        verify_certificate(bad, policy=P.CertifiedPolicy)
+
+
+def test_certificate_id_binding_check():
+    """The id is recomputed from the pinned parts — no rewritten ids."""
+    cert = certify(_dm().dispose(ROW))                    # unsigned
+    forged = dict(cert, certificate_id="sha256:" + "0" * 64)
+    with pytest.raises(CertificateError, match="certificate_id"):
+        verify_certificate(forged, policy=P.FraudPolicy)
+
+
+def test_row_integrity_check():
+    d = _dm().dispose(ROW)
+    cert = certify(d, key=KEY)
+    assert verify_certificate(cert, key=KEY, policy=P.FraudPolicy,
+                              row=ROW) is True
+    with pytest.raises(CertificateError, match="input tamper"):
+        verify_certificate(cert, key=KEY, policy=P.FraudPolicy,
+                           row=dict(ROW, amount=9999))
+    with pytest.raises(CertificateError, match="row must be a mapping"):
+        verify_certificate(cert, key=KEY, policy=P.FraudPolicy, row=[1, 2])
+
+
+def test_guarantee_and_assurance_are_policy_derived():
+    """A signer-less relabel fails even after the id is RECOMPUTED (the id
+    recipe is public) — guarantee/assurance must match the policy."""
+    from mjolnir_ml.certificate import _binding_id
+    cert = certify(_dm().dispose(ROW))                    # unsigned
+
+    def _rebind(c):
+        return dict(c, certificate_id=_binding_id(c))
+
+    other_g = ("declared" if cert["guarantee"] == "model_backed"
+               else "model_backed")
+    with pytest.raises(CertificateError, match="guarantee disagrees"):
+        verify_certificate(_rebind(dict(cert, guarantee=other_g)),
+                           policy=P.FraudPolicy)
+    with pytest.raises(CertificateError, match="assurance disagrees"):
+        verify_certificate(_rebind(dict(cert, assurance="dual_track")),
+                           policy=P.FraudPolicy)
+    # signed: the HMAC catches the relabel before any derivation does
+    signed = certify(_dm().dispose(ROW), key=KEY)
+    with pytest.raises(CertificateError, match="signature"):
+        verify_certificate(_rebind(dict(signed, guarantee=other_g)),
+                           key=KEY, policy=P.FraudPolicy)
+
+
+def test_row_check_also_covers_regressor_decisions():
+    dm = DecisionModel(StubReg(5.0), P.RegressorPolicy, features=FEATS_R,
+                       regime="off")
+    dm.calibrate([{"x": i * 0.1} for i in range(40)],
+                 [i * 0.1 for i in range(40)], alpha=0.10)
+    cert = certify(dm.dispose(ROW_R), key=KEY)
+    with pytest.raises(CertificateError, match="input tamper"):
+        verify_certificate(cert, key=KEY, policy=P.RegressorPolicy,
+                           row={"x": 42.0})

@@ -126,3 +126,52 @@ class SklearnPolicy(DecisionPolicyBase):
     assert rule("review_middle",
                 when=lambda p_positive: p_positive > 0.20 and p_positive < 0.80,
                 verdict=ASK)
+
+
+@dsl
+class RiskPolicy(DecisionPolicyBase):
+    """Two-track policy over CRC facts; ask only when neither action is certified."""
+
+    facts = ("x",)
+
+    assert rule("release_risk", when=lambda risk_release: risk_release,
+                verdict=RELEASE)
+    assert rule("deny_risk", when=lambda risk_deny: risk_deny, verdict=DENY)
+    assert rule("review_risk",
+                when=lambda risk_release, risk_deny:
+                not risk_release and not risk_deny, verdict=ASK)
+
+
+@dsl
+class DeadDenyPolicy(DecisionPolicyBase):
+    """A coverage policy whose deny rule is unreachable at this threshold."""
+
+    facts = ("x",)
+
+    assert rule("release_low", when=lambda hi: hi <= 10.0, verdict=RELEASE)
+    assert rule("deny_high", when=lambda lo: lo > 240.0, verdict=DENY)
+    assert rule("review_mid",
+                when=lambda lo, hi: lo <= 240.0 and hi > 10.0, verdict=ASK)
+
+
+@dsl
+class RegimePolicy(DecisionPolicyBase):
+    """Escalates in-regime rows; the regime floor decides before this runs."""
+
+    facts = ("a", "b")
+
+    assert rule("review", when=lambda a: a == a, verdict=ASK)
+
+
+@dsl
+class DualPolicy(DecisionPolicyBase):
+    """A release certified by both the coverage and risk tracks."""
+
+    facts = ("x",)
+
+    assert rule("release_coverage", when=lambda hi: hi <= 10.0,
+                verdict=RELEASE)
+    assert rule("release_risk", when=lambda risk_release: risk_release,
+                verdict=RELEASE)
+    assert rule("review", when=lambda hi, risk_release:
+                not (hi <= 10.0 or risk_release), verdict=ASK)

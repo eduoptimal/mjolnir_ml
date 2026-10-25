@@ -17,6 +17,7 @@ from __future__ import annotations
 import time
 
 from mjolnir_ml.certificate import certify, verify_certificate
+from mjolnir_ml.feasibility import feasibility_from_dispositions
 from mjolnir_ml.hazards import measure_completeness as _measure_completeness
 from mjolnir_ml.model import DecisionModel, Disposition
 from mjolnir_ml.pair import audit
@@ -87,7 +88,7 @@ def _row_view(i, d: Disposition) -> dict:
 
 def report_data(dm: DecisionModel, rows, *, title="Decision report",
                 safe=None, decidable=None, ledger=None, key=None,
-                sample=8, context=None) -> dict:
+                sample=8, context=None, threshold=None) -> dict:
     """Collect the full report as a JSON-able dict."""
     rows = list(rows)
     disps = [dm.dispose(r) for r in rows]
@@ -118,6 +119,18 @@ def report_data(dm: DecisionModel, rows, *, title="Decision report",
                                 / max(1, sum(1 for p in cert
                                              if "lo" in p and "hi" in p))
                                 if any("lo" in p for p in cert) else None),
+        "mean_p_event": (sum(float(p["p_event"]) for p in cert
+                             if "p_event" in p)
+                         / max(1, sum(1 for p in cert if "p_event" in p))
+                         if any("p_event" in p for p in cert) else None),
+        "risk_release_share": (
+            sum(1 for p in cert if p.get("risk_release") is True)
+            / max(1, sum(1 for p in cert if "risk_release" in p))
+            if any("risk_release" in p for p in cert) else None),
+        "risk_deny_share": (
+            sum(1 for p in cert if p.get("risk_deny") is True)
+            / max(1, sum(1 for p in cert if "risk_deny" in p))
+            if any("risk_deny" in p for p in cert) else None),
     }
 
     data = {
@@ -130,8 +143,17 @@ def report_data(dm: DecisionModel, rows, *, title="Decision report",
             "model_digest": dm.model_digest,
             "calibration_digest": (dm.kappa.digest if dm.kappa else None),
             "alpha": (dm.kappa.alpha if dm.kappa else None),
+            "one_sided": bool(dm.kappa and dm.kappa.one_sided),
+            "alpha_lower": (dm.kappa.alpha_lower if dm.kappa else None),
+            "alpha_upper": (dm.kappa.alpha_upper if dm.kappa else None),
             "adaptive": bool(dm.kappa and hasattr(dm.kappa, "observe")),
+            "risk": ({"digest": dm.risk.digest, "event": dm.risk.event,
+                      "alpha_release": dm.risk.alpha_release,
+                      "alpha_deny": dm.risk.alpha_deny}
+                     if dm.risk is not None else None),
             "regime": dm.regime,
+            "regime_floor": (dm.regime_floor.as_dict()
+                             if dm.regime_floor is not None else None),
             "n_features": len(dm.features),
             "features": list(dm.features),
             "statements": [{"code": s.code, "kind": s.kind,
@@ -144,6 +166,8 @@ def report_data(dm: DecisionModel, rows, *, title="Decision report",
                       "claim_rate": preds["claims"] / n if n else 0.0,
                       "abstain_causes": causes},
         "predictions": preds,
+        "feasibility": feasibility_from_dispositions(
+            dm, disps, threshold=threshold).as_dict(),
         "rows": [_row_view(i, d) for i, d in enumerate(disps)],
     }
     if safe is not None and decidable is not None:
@@ -192,10 +216,30 @@ def report(dm: DecisionModel, rows, **kwargs) -> str:
         lines.append(f"  calibration   alpha={c['alpha']:.2f}"
                      f"{'  adaptive=ACI' if c['adaptive'] else ''}"
                      f"  ({c['calibration_digest'][:23]}…)")
+        if c.get("one_sided"):
+            lines.append(
+                f"  bounds        one-sided  "
+                f"P(Y>=lo)>=1-{c['alpha_lower']:.2f} · "
+                f"P(Y<=hi)>=1-{c['alpha_upper']:.2f}"
+                f"  (decision envelope, not a joint interval)")
     else:
         lines.append("  calibration   none (conformal facts unavailable)")
-    lines.append(f"  regime        {c['regime']}"
-                 f"   features={c['n_features']}")
+    if c.get("risk"):
+        r = c["risk"]
+        lines.append(f"  risk track    event={r['event']}  "
+                     f"alpha_release={r['alpha_release']:.2f} · "
+                     f"alpha_deny={r['alpha_deny']:.2f}  "
+                     f"({r['digest'][:23]}…)")
+        lines.append("  assurance     coverage=pointwise_coverage · "
+                     "risk=action_risk_control · both=dual_track")
+    if c.get("regime_floor"):
+        rf = c["regime_floor"]
+        lines.append(f"  regime        {c['regime']}  method={rf['method']}"
+                     f"  alpha_ood={rf['alpha_ood']:.2f}"
+                     f"  tau={rf['tau']:.6g}  ({rf['digest'][:23]}…)")
+    else:
+        lines.append(f"  regime        {c['regime']}"
+                     f"   features={c['n_features']}")
     lines.append(f"  features      {', '.join(c['features'])}")
 
     section("POLICY (every statement, compiled)")
@@ -264,12 +308,57 @@ def report(dm: DecisionModel, rows, **kwargs) -> str:
         section("PREDICTIONS")
         lines.append(f"  mean conf {_num(preds['mean_conf'])} · "
                      f"certified share {_num(preds['certified_share'])}")
+        if preds.get("mean_p_event") is not None:
+            lines.append(f"  mean p_event {_num(preds['mean_p_event'])} · "
+                         f"risk release {_num(preds['risk_release_share'])} · "
+                         f"risk deny {_num(preds['risk_deny_share'])}")
         if preds["mean_set_size"] is not None:
             lines.append(f"  mean conformal set size "
                          f"{_num(preds['mean_set_size'])}")
         if preds["mean_interval_width"] is not None:
-            lines.append(f"  mean conformal interval width "
+            label = ("mean one-sided decision band width"
+                     if c.get("one_sided") else "mean conformal interval width")
+            lines.append(f"  {label} "
                          f"{_num(preds['mean_interval_width'])}")
+            if c.get("one_sided"):
+                lines.append(
+                    "  tails are calibrated independently; the band is not "
+                    "a joint 1-alpha interval")
+
+    if "feasibility" in data:
+        f = data["feasibility"]
+        section("FEASIBILITY (over the supplied rows)")
+        cb, rb = f["coverage_bounds"], f["risk_bounds"]
+        if cb.get("max_lo") is not None:
+            lines.append(f"  lo range [{_num(cb['min_lo'])}, "
+                         f"{_num(cb['max_lo'])}] · hi range "
+                         f"[{_num(cb['min_hi'])}, {_num(cb['max_hi'])}]"
+                         f"{f' · threshold {_num(f['threshold'])}' if f['threshold'] is not None else ''}")
+        if rb.get("min_p_event") is not None:
+            lines.append(f"  p_event range [{_num(rb['min_p_event'])}, "
+                         f"{_num(rb['max_p_event'])}] · "
+                         f"lambda_release {_num(rb['lambda_release'])} · "
+                         f"lambda_deny {_num(rb['lambda_deny'])}")
+        checks = [c for c in f["checks"] if c["kind"] in ("rule", "release")]
+        if checks:
+            rows_ = [[c["code"], _clip(c["assurance"], 22), c["observed"],
+                      "yes" if c["reachable"] else "NO"]
+                     for c in checks]
+            lines.append(_table(["rule", "assurance", "observed", "reachable"],
+                                rows_))
+        if f["dead_rules"]:
+            lines.append(f"  DEAD RULES: {', '.join(f['dead_rules'])}")
+            for code in f["dead_rules"]:
+                chk = next((c for c in f["checks"] if c["code"] == code), None)
+                ev = (chk or {}).get("evidence", {})
+                if "direction" in ev and ev.get("slack") is not None:
+                    lines.append(
+                        f"    {code}: {ev['direction']} at "
+                        f"{_num(ev.get('threshold'))} · achieved bound "
+                        f"{_num(ev.get('achieved_bound'))} · slack "
+                        f"{ev['slack']:+.2f}")
+        else:
+            lines.append("  every declared rule is reachable on these rows")
 
     if "certificates" in data:
         cf = data["certificates"]

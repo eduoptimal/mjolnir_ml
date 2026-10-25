@@ -36,6 +36,9 @@ MODEL FACTS (reserved names):
     certified    conformal prediction set is a singleton at the declared α
     set_size     conformal prediction-set size
     lo / hi      conformal interval bounds (regressor, calibrated group)
+    p_event      risk track: P(declared adverse event | x) (calibrate_risk)
+    risk_release risk track: p_event <= the CRC release threshold
+    risk_deny    risk track: p_event >= the CRC deny threshold
 
 Unavailable-for-this-estimator facts fail at BIND. Available-but-not-yet-
 calibrated facts fail at DISPOSE as abstain(missing:<fact>) — the floor is
@@ -59,6 +62,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 from mjolnir_ml.policy import MODEL_FACTS, Policy
+from mjolnir_ml.regime import MultivariateRegimeFloor, RegimeError
 from mjolnir_ml.vendors import wire
 from mjolnir_ml.vendors.core.verdict import UNSTATED, Verdict, evaluate
 
@@ -86,6 +90,10 @@ class Disposition:
     policy_digest: str
     model_digest: str
     calibration_digest: str | None = None
+    risk_digest: str | None = None
+    regime_digest: str | None = None
+    assurance: str = "declared"       # declared | model_backed |
+                                      # pointwise_coverage | action_risk_control
     alpha: float | None = None
     certificate_id: str = ""
     prediction: dict | None = None    # model facts when predict ran
@@ -98,10 +106,13 @@ class Disposition:
             "schema": self.schema, "verdict": self.verdict,
             "basis": list(self.basis), "missing": self.missing,
             "reason": self.reason, "say": self.say,
-            "guarantee": self.guarantee, "claim_digest": self.claim_digest,
+            "guarantee": self.guarantee, "assurance": self.assurance,
+            "claim_digest": self.claim_digest,
             "policy_digest": self.policy_digest,
             "model_digest": self.model_digest,
             "calibration_digest": self.calibration_digest,
+            "risk_digest": self.risk_digest,
+            "regime_digest": self.regime_digest,
             "alpha": self.alpha, "certificate_id": self.certificate_id,
             "facts": dict(self.facts), "prediction": self.prediction,
             "latency_ms": self.latency_ms,
@@ -122,6 +133,8 @@ class Disposition:
         basis = tuple(basis)
         cert_id = _digest_parts(self.claim_digest, self.policy_digest,
                                 self.model_digest, self.calibration_digest or "-",
+                                self.risk_digest or "-",
+                                self.regime_digest or "-",
                                 verdict, ",".join(basis), self.guarantee)
         return replace(self, verdict=verdict, basis=basis,
                        reason=reason if reason is not None else self.reason,
@@ -223,10 +236,13 @@ class DecisionModel:
         self._is_clf = is_clf
         self._proba = has_proba
         self._kappa = None
+        self._risk = None
+        self._regime_floor = None
+        self._regime_digest = None
 
         _classes = getattr(estimator, "classes_", None)
         n_classes = 0 if _classes is None else len(_classes)
-        capabilities = {"pred"}
+        capabilities = {"pred", "p_event", "risk_release", "risk_deny"}
         if is_clf and has_proba:
             capabilities |= {"conf", "certified", "set_size"}
             if n_classes == 2:
@@ -262,10 +278,26 @@ class DecisionModel:
     # ---------------------------------------------------------- calibration --
     def calibrate(self, rows, y, alpha: float = 0.05,
                   group: str | None = None, adaptive: bool = False,
-                  gamma: float = 0.05, window: int = 400) -> "DecisionModel":
+                  gamma: float = 0.05, window: int = 400,
+                  method: str = "split", scale=None, lower=None,
+                  upper=None, one_sided: bool = False,
+                  alpha_lower: float | None = None,
+                  alpha_upper: float | None = None) -> "DecisionModel":
         """Fit the conformal trust index κ on held-out rows. `group` is a
         feature name for Mondrian (per-region) calibration; a group with too
         little data is a CalibrationError, never an uncalibrated claim.
+
+        Regressor width methods (same finite-sample coverage, different
+        placement): "split" (constant [pred±q]), "normalized" (a fitted
+        `scale` estimator gives [pred ± q·sigma(x)]), or "cqr" (fitted
+        `lower`/`upper` quantile estimators give [l(x)-q, u(x)+q]). A failed
+        auxiliary model yields no interval, so the policy abstains.
+
+        one_sided=True separates the tails: `lo` guarantees
+        P(Y >= lo) >= 1 - alpha_lower and `hi` guarantees
+        P(Y <= hi) >= 1 - alpha_upper (each defaults to `alpha`). That is a
+        decision envelope for directional rules (deny vs release), not a joint
+        1-alpha interval.
 
         adaptive=True fits ACI (beta_release G4): the per-group risk level
         alpha_t moves from observed miscoverage, so `observe(row, y)` after a
@@ -279,7 +311,50 @@ class DecisionModel:
         self._kappa = _fit_kappa(self.estimator, rows, y, alpha=alpha,
                                 group=group,
                            features=self.features, adaptive=adaptive,
-                           gamma=gamma, window=window)
+                           gamma=gamma, window=window, method=method,
+                           scale=scale, lower=lower, upper=upper,
+                           one_sided=one_sided, alpha_lower=alpha_lower,
+                           alpha_upper=alpha_upper)
+        return self
+
+    def calibrate_risk(self, rows, target, *, tau: float | None = None,
+                       alpha_release: float = 0.10,
+                       alpha_deny: float = 0.10, estimator=None,
+                       group: str | None = None,
+                       event: str | None = None) -> "DecisionModel":
+        """Fit the risk track: CRC-calibrated action thresholds.
+
+        `target` is either the realized outcome (with `tau`, so the adverse
+        event is `Y > tau`) or a 0/1 event indicator (without `tau`). The
+        fitted `estimator` must expose `predict_proba` and predict that event;
+        it must not have been fitted on `rows`.
+
+        The result supplies the facts `p_event`, `risk_release`, `risk_deny`.
+        A policy that requires one of them and has no risk index abstains on
+        the missing fact. `alpha_release`/`alpha_deny` are the per-action risk
+        budgets; `group` is a feature for per-region thresholds."""
+        from mjolnir_ml.risk import RiskError, adverse_event, fit_risk_index
+        if estimator is None:
+            raise BindError(
+                "calibrate_risk needs a fitted crossing estimator "
+                "(predict_proba over the declared adverse event)")
+        if group is not None and group not in self.features:
+            raise BindError(
+                f"risk group {group!r} is not an input feature "
+                f"{list(self.features)}")
+        if tau is not None:
+            events = adverse_event(target, tau)
+            event = event or f"Y>{float(tau):g}"
+        else:
+            events = [int(v) for v in target]
+            event = event or "adverse"
+        try:
+            self._risk = fit_risk_index(
+                estimator, rows, events, alpha_release=alpha_release,
+                alpha_deny=alpha_deny, features=self.features, group=group,
+                event=event)
+        except RiskError as ex:
+            raise BindError(str(ex))
         return self
 
     def observe(self, row, y_true) -> "DecisionModel":
@@ -303,7 +378,10 @@ class DecisionModel:
             proba = [_float(p) for p in self.estimator.predict_proba(X)[0]]
             score = 1.0 - proba[idx]
         else:
-            score = abs(float(y_true) - float(pred))
+            if hasattr(self._kappa, "reg_nonconformity"):
+                score = self._kappa.reg_nonconformity(X[0], pred, y_true)
+            else:
+                score = abs(float(y_true) - float(pred))
         self._kappa.observe(key, score)
         return self
 
@@ -312,14 +390,31 @@ class DecisionModel:
         return self._kappa
 
     @property
+    def risk(self):
+        return self._risk
+
+    @property
+    def regime_floor(self):
+        return self._regime_floor
+
+    @property
     def model_digest(self) -> str:
         return self._model_digest
 
     # -------------------------------------------------------------- regime --
-    def fit_regime(self, rows) -> "DecisionModel":
-        """Record per-feature training bounds from list[dict] (same shape as
-        dispose). Numeric: [min, max] over finite values. Non-numeric: the
-        set of seen values; an unseen category is out-of-regime."""
+    def fit_regime(self, rows, *, method=None, alpha_ood: float = 0.02,
+                   calibration_rows=None, random_state: int = 0,
+                   score_fn=None) -> "DecisionModel":
+        """Record the training regime.
+
+        Default: per-feature [min, max] boxes (numeric) and seen categories
+        (non-numeric). `method="mahalanobis"` or `"isolation_forest"` fits a
+        multivariate detector on `rows` and calibrates its cutoff on held-out
+        `calibration_rows` at `alpha_ood` (false-abstention budget);
+        `method="custom"` takes a `score_fn(matrix) -> scores`. The calibrated
+        floor replaces the axis-aligned box check (the box is still recorded
+        for reporting/backward compatibility).
+        """
         if not isinstance(rows, (list, tuple)) or not rows:
             raise BindError("fit_regime needs a non-empty list of dict rows")
         bounds: dict = {}
@@ -338,6 +433,34 @@ class DecisionModel:
             else:
                 bounds[f] = ("seen", frozenset(vals))
         self._bounds = bounds
+        if method is None:
+            self._regime_floor = None
+            self._regime_digest = None
+            return self
+        try:
+            if method == "custom":
+                if score_fn is None:
+                    raise BindError(
+                        "method='custom' needs score_fn")
+                if calibration_rows is None:
+                    raise BindError(
+                        "method='custom' needs calibration_rows (held-out)")
+                floor = MultivariateRegimeFloor.from_fn(
+                    score_fn, method="custom", features=self.features,
+                    rows=rows, calibration_rows=calibration_rows,
+                    alpha_ood=alpha_ood)
+            else:
+                if calibration_rows is None:
+                    raise BindError(
+                        f"method={method!r} needs calibration_rows "
+                        f"(held-out rows for the conformal cutoff)")
+                floor = MultivariateRegimeFloor.fit(
+                    method, rows, self.features, calibration_rows,
+                    alpha_ood=alpha_ood, random_state=random_state)
+        except RegimeError as ex:
+            raise BindError(str(ex))
+        self._regime_floor = floor
+        self._regime_digest = floor.digest
         return self
 
     # ------------------------------------------------------------- dispose --
@@ -376,25 +499,43 @@ class DecisionModel:
                 return _abs("regime_not_fitted",
                             "cannot decide: no training regime recorded "
                             "(call fit_regime)", ("regime_not_fitted",))
-            for f, b in self._bounds.items():
-                v = row[f]
-                if b[0] == "num":
-                    if isinstance(v, bool) or not isinstance(v, numbers.Real):
+            if self._regime_floor is not None:
+                try:
+                    ok, why, score = self._regime_floor.check(
+                        [row[f] for f in self.features])
+                except Exception as ex:                        # noqa: BLE001
+                    return _abs("model_error",
+                                f"cannot decide: regime floor failed "
+                                f"({type(ex).__name__}: {ex})",
+                                ("model_error",))
+                if not ok:
+                    return _abs(
+                        f"out_of_regime:{self._regime_floor.method}",
+                        f"cannot decide: outside the multivariate regime "
+                        f"({why})",
+                        (f"out_of_regime:{self._regime_floor.method}",),
+                        prediction={"regime_score": score,
+                                    "regime_tau": self._regime_floor.tau})
+            else:
+                for f, b in self._bounds.items():
+                    v = row[f]
+                    if b[0] == "num":
+                        if isinstance(v, bool) or not isinstance(v, numbers.Real):
+                            return _abs(f"out_of_regime:{f}",
+                                        f"cannot decide: {f}={v!r} is not numeric "
+                                        f"within recorded bounds "
+                                        f"[{b[1]:g}, {b[2]:g}]",
+                                        (f"out_of_regime:{f}",))
+                        if not (b[1] <= float(v) <= b[2]):
+                            return _abs(f"out_of_regime:{f}",
+                                        f"cannot decide: {f}={float(v):g} is "
+                                        f"outside recorded training bounds "
+                                        f"[{b[1]:g}, {b[2]:g}]",
+                                        (f"out_of_regime:{f}",))
+                    elif v not in b[1]:
                         return _abs(f"out_of_regime:{f}",
-                                    f"cannot decide: {f}={v!r} is not numeric "
-                                    f"within recorded bounds "
-                                    f"[{b[1]:g}, {b[2]:g}]",
-                                    (f"out_of_regime:{f}",))
-                    if not (b[1] <= float(v) <= b[2]):
-                        return _abs(f"out_of_regime:{f}",
-                                    f"cannot decide: {f}={float(v):g} is "
-                                    f"outside recorded training bounds "
-                                    f"[{b[1]:g}, {b[2]:g}]",
-                                    (f"out_of_regime:{f}",))
-                elif v not in b[1]:
-                    return _abs(f"out_of_regime:{f}",
-                                f"cannot decide: {f}={v!r} is an unseen "
-                                f"category", (f"out_of_regime:{f}",))
+                                    f"cannot decide: {f}={v!r} is an unseen "
+                                    f"category", (f"out_of_regime:{f}",))
 
         # 3. predict -> model facts. Any exception: abstain, never swallow.
         facts = {f: row[f] for f in self.features}
@@ -447,7 +588,7 @@ class DecisionModel:
             else:
                 if self._kappa is not None:
                     key = self._kappa.group_key(row)
-                    iv = self._kappa.interval(float(pred), key)
+                    iv = self._kappa.interval(float(pred), key, X[0])
                     if iv is not None:
                         lo, hi = iv
                         facts.update(lo=lo, hi=hi)
@@ -457,6 +598,25 @@ class DecisionModel:
             return _abs("model_error",
                         f"cannot decide: estimator failed ({type(ex).__name__}: "
                         f"{msg})", ("model_error",))
+
+        # 4b. risk track (independent of the coverage index). A failure here
+        #     omits the facts rather than blocking a coverage-only decision;
+        #     a policy that requires them then abstains on the missing fact.
+        if self._risk is not None:
+            try:
+                key_r = self._risk.group_key(row)
+                p_event = self._risk.p_event(X[0])
+                risk_release = self._risk.release_ok(p_event, key_r)
+                risk_deny = self._risk.deny_ok(p_event, key_r)
+                facts.update(p_event=p_event, risk_release=risk_release,
+                             risk_deny=risk_deny)
+                prediction.update(
+                    p_event=p_event, risk_release=risk_release,
+                    risk_deny=risk_deny, risk_group=key_r,
+                    lambda_release=self._risk.lambda_release(key_r),
+                    lambda_deny=self._risk.lambda_deny(key_r))
+            except Exception:                                # noqa: BLE001
+                pass
 
         # 4+5+6. the policy is the only disposer; the same function replays
         #        a certificate offline (Policy.dispose_facts).
@@ -514,6 +674,9 @@ class DecisionModel:
                             regime=self.regime)
         new._bounds = self._bounds
         new._kappa = self._kappa
+        new._risk = self._risk
+        new._regime_floor = self._regime_floor
+        new._regime_digest = self._regime_digest
         return new
 
     def with_estimator(self, estimator, *, calibration_rows=None,
@@ -525,6 +688,11 @@ class DecisionModel:
         new = DecisionModel(estimator, self.policy, features=self.features,
                             regime=self.regime)
         new._bounds = self._bounds
+        new._regime_floor = self._regime_floor
+        new._regime_digest = self._regime_digest
+        # The risk index is tied to the crossing model/event, not to this
+        # estimator. Starting from an uncalibrated risk track is fail closed.
+        new._risk = None
         if calibration_rows is not None or calibration_y is not None:
             if calibration_rows is None or calibration_y is None:
                 raise BindError("with_estimator needs both calibration_rows "
@@ -537,16 +705,22 @@ class DecisionModel:
     def _pack(self, verdict, basis, missing, reason, say, guarantee,
               prediction, t0, context, facts=None) -> Disposition:
         cal_digest = self._kappa.digest if self._kappa is not None else None
+        risk_digest = self._risk.digest if self._risk is not None else None
+        regime_digest = self._regime_digest
         alpha = self._kappa.alpha if self._kappa is not None else None
+        assurance = _assurance(self.policy, verdict, basis, missing)
         cert_id = _digest_parts(self._claim, self.policy.digest,
                                 self._model_digest, cal_digest or "-",
+                                risk_digest or "-", regime_digest or "-",
                                 verdict, ",".join(basis), guarantee)
         return Disposition(
             schema=self.SCHEMA, verdict=verdict, basis=tuple(basis),
             missing=missing, reason=reason, say=say, guarantee=guarantee,
             claim_digest=self._claim, policy_digest=self.policy.digest,
             model_digest=self._model_digest, calibration_digest=cal_digest,
-            alpha=alpha, certificate_id=cert_id, prediction=prediction,
+            risk_digest=risk_digest, regime_digest=regime_digest,
+            assurance=assurance, alpha=alpha,
+            certificate_id=cert_id, prediction=prediction,
             facts=dict(facts or {}),
             latency_ms=round((time.perf_counter() - t0) * 1000, 3),
             context=dict(context or {}))
@@ -561,12 +735,56 @@ class DecisionModel:
                 and again.policy_digest == disp.policy_digest
                 and again.model_digest == disp.model_digest
                 and again.calibration_digest == disp.calibration_digest
+                and again.risk_digest == disp.risk_digest
+                and again.regime_digest == disp.regime_digest
+                and again.assurance == disp.assurance
                 and again.alpha == disp.alpha
                 and again.certificate_id == disp.certificate_id
                 and again.guarantee == disp.guarantee)
 
     def __call__(self, row, context=None) -> Disposition:
         return self.dispose(row, context=context)
+
+
+_RISK_FACTS = frozenset({"p_event", "risk_release", "risk_deny"})
+_COVERAGE_FACTS = frozenset({"certified", "set_size", "lo", "hi"})
+
+
+def _assurance(policy: Policy, verdict, basis, missing=None) -> str:
+    """Which guarantee did the deciding statements actually use?
+
+    declared           stated input facts only
+    model_backed       raw model facts (pred/conf/p_positive)
+    pointwise_coverage conformal facts (certified/set_size/lo/hi)
+    action_risk_control CRC risk facts (p_event/risk_release/risk_deny)
+    dual_track         a release certified by BOTH coverage and CRC rules
+    """
+    if missing in _RISK_FACTS:
+        return "action_risk_control"
+    if missing in _COVERAGE_FACTS:
+        return "pointwise_coverage"
+    reqs: set = set()
+    cov_release = risk_release = False
+    for code in basis:
+        try:
+            st = policy.statement(code)
+        except KeyError:
+            continue
+        reqs |= set(st.requires)
+        if st.kind == "release":
+            if set(st.requires) & _COVERAGE_FACTS:
+                cov_release = True
+            if set(st.requires) & _RISK_FACTS:
+                risk_release = True
+    if verdict == wire.RELEASE and cov_release and risk_release:
+        return "dual_track"
+    if reqs & _RISK_FACTS:
+        return "action_risk_control"
+    if reqs & _COVERAGE_FACTS:
+        return "pointwise_coverage"
+    if reqs & MODEL_FACTS:
+        return "model_backed"
+    return "declared"
 
 
 def _codes(policy: Policy) -> frozenset:

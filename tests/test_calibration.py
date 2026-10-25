@@ -159,3 +159,212 @@ def test_regressor_uncalibrated_group_abstains_on_missing_lo():
     d = dm.dispose({"x": 5.0, "region": "B"})
     assert d.verdict == ABSTAIN
     assert d.missing == "hi"  # the engine rule requiring hi runs before releases
+
+
+# ------------------------------------------------- local-width calibration --
+
+class Affine:
+    """prediction = a*x + b; a stand-in for a fitted scale/quantile model."""
+
+    def __init__(self, a=1.0, b=0.0):
+        self.a, self.b = a, b
+
+    def get_params(self, deep=False):
+        return {"a": self.a, "b": self.b}
+
+    def predict(self, X):
+        return [self.a * row[0] + self.b for row in X]
+
+
+def test_normalized_interval_uses_the_scale_estimator():
+    xs = [float(x) for x in range(1, 21)]
+    rows = [{"x": x} for x in xs]
+    scale = Affine(1.0, 1.0)                 # sigma(x) = x + 1
+    y = [x + 0.5 * (x + 1.0) for x in xs]    # constant normalized score 0.5
+    dm = DecisionModel(XReg(), P.RegressorPolicy, features=FEATS,
+                       regime="off")
+    dm.calibrate(rows, y, alpha=0.10, method="normalized", scale=scale)
+    d = dm.dispose({"x": 5.0})
+    assert d.prediction["lo"] == pytest.approx(5.0 - 0.5 * 6.0)
+    assert d.prediction["hi"] == pytest.approx(5.0 + 0.5 * 6.0)
+    assert d.prediction["hi"] - d.prediction["lo"] == pytest.approx(6.0)
+    assert d.verdict == RELEASE
+    assert dm.kappa.method == "normalized"
+
+
+def test_normalized_interval_is_narrower_where_the_model_is_quiet():
+    xs = [float(x) for x in range(1, 21)]
+    rows = [{"x": x} for x in xs]
+    dm = DecisionModel(XReg(), P.RegressorPolicy, features=FEATS,
+                       regime="off")
+    dm.calibrate(rows, [x + 0.5 * (x + 1.0) for x in xs], alpha=0.10,
+                 method="normalized", scale=Affine(1.0, 1.0))
+    small = dm.dispose({"x": 1.0}).prediction
+    large = dm.dispose({"x": 19.0}).prediction
+    assert (large["hi"] - large["lo"]) > (small["hi"] - small["lo"])
+
+
+def test_cqr_interval_uses_both_quantile_estimators():
+    xs = [float(x) for x in range(1, 21)]
+    rows = [{"x": x} for x in xs]
+    y = [x + 1.0 for x in xs]                # score = max(-2, 0) = 0
+    dm = DecisionModel(XReg(), P.RegressorPolicy, features=FEATS,
+                       regime="off")
+    dm.calibrate(rows, y, alpha=0.10, method="cqr",
+                 lower=Affine(1.0, -1.0), upper=Affine(1.0, 1.0))
+    d = dm.dispose({"x": 5.0})
+    assert d.prediction["lo"] == pytest.approx(4.0)
+    assert d.prediction["hi"] == pytest.approx(6.0)
+    assert d.verdict == RELEASE
+    assert dm.kappa.method == "cqr"
+
+
+def test_width_method_changes_the_calibration_digest():
+    xs = [float(x) for x in range(1, 21)]
+    rows = [{"x": x} for x in xs]
+    y = [x + 1.0 for x in xs]
+    split = fit_kappa(XReg(), rows, y, alpha=0.10)
+    normalized = fit_kappa(XReg(), rows, y, alpha=0.10,
+                           method="normalized", scale=Affine(1.0, 0.0))
+    assert split.digest != normalized.digest
+
+
+def test_auxiliary_methods_refuse_missing_or_mismatched_estimators():
+    xs = [float(x) for x in range(1, 21)]
+    rows = [{"x": x} for x in xs]
+    y = [x + 1.0 for x in xs]
+    with pytest.raises(CalibrationError, match="needs a fitted `scale`"):
+        fit_kappa(XReg(), rows, y, alpha=0.10, method="normalized")
+    with pytest.raises(CalibrationError, match="`lower` and `upper`"):
+        fit_kappa(XReg(), rows, y, alpha=0.10, method="cqr",
+                  lower=Affine(1.0, 0.0))
+    with pytest.raises(CalibrationError, match="regressor width"):
+        fit_kappa(XClf(), _rows([0.1] * 20), [0] * 20, alpha=0.10,
+                  method="normalized", scale=Affine(1.0, 0.0))
+    with pytest.raises(CalibrationError, match="takes no auxiliary"):
+        fit_kappa(XReg(), rows, y, alpha=0.10, method="split",
+                  scale=Affine(1.0, 0.0))
+
+
+def test_nonpositive_scale_is_a_calibration_error():
+    xs = [float(x) for x in range(1, 21)]
+    with pytest.raises(CalibrationError, match="non-positive"):
+        fit_kappa(XReg(), [{"x": x} for x in xs], [x + 1.0 for x in xs],
+                  alpha=0.10, method="normalized", scale=Affine(0.0, 0.0))
+
+
+def test_adaptive_normalized_observe_uses_the_same_score():
+    xs = [float(x) for x in range(1, 21)]
+    rows = [{"x": x} for x in xs]
+    dm = DecisionModel(XReg(), P.RegressorPolicy, features=FEATS,
+                       regime="off")
+    dm.calibrate(rows, [x + 0.5 * (x + 1.0) for x in xs], alpha=0.10,
+                 method="normalized", scale=Affine(1.0, 1.0), adaptive=True)
+    before = dm.kappa.alpha_at("__all__")
+    dm.observe({"x": 5.0}, 100.0)                      # a large miss
+    after = dm.kappa.alpha_at("__all__")
+    assert after < before                              # widen after a miss
+
+
+class StepScale:
+    """Positive on the calibration rows, zero outside them (a fail-closed probe)."""
+
+    def get_params(self, deep=False):
+        return {}
+
+    def predict(self, X):
+        return [1.0 if row[0] <= 10.0 else 0.0 for row in X]
+
+
+def test_auxiliary_failure_at_decision_time_omits_the_interval():
+    xs = [float(x) for x in range(1, 11)]
+    dm = DecisionModel(XReg(), P.RegressorPolicy, features=FEATS,
+                       regime="off")
+    dm.calibrate([{"x": x} for x in xs], [x + 1.0 for x in xs], alpha=0.10,
+                 method="normalized", scale=StepScale())
+    d = dm.dispose({"x": 20.0})          # sigma = 0 -> no interval
+    assert d.prediction.get("lo") is None
+    assert d.verdict == ABSTAIN
+    assert d.missing in ("lo", "hi")
+
+
+# --------------------------------------------------- one-sided (two-track) --
+
+def test_one_sided_split_lifts_the_lower_bound():
+    xs = [float(x) for x in range(1, 21)]
+    rows = [{"x": x} for x in xs]
+    # 18 conservative overpredictions and 2 dangerous underpredictions:
+    # the symmetric |residual| quantile is 5, but the lower tail only needs 1.
+    y = [x - 1.0 for x in xs]
+    y[0] = xs[0] + 5.0
+    y[7] = xs[7] + 5.0
+    two = fit_kappa(XReg(), rows, y, alpha=0.10)
+    one = fit_kappa(XReg(), rows, y, alpha=0.10, one_sided=True)
+    d_two = DecisionModel(XReg(), P.RegressorPolicy, features=FEATS,
+                          regime="off")
+    d_two._kappa = two
+    d_one = DecisionModel(XReg(), P.RegressorPolicy, features=FEATS,
+                          regime="off")
+    d_one._kappa = one
+    lo_two = d_two.dispose({"x": 5.0}).prediction["lo"]
+    lo_one = d_one.dispose({"x": 5.0}).prediction["lo"]
+    assert lo_one > lo_two                 # the lower tail is no longer diluted
+    assert one.q_lo("__all__") == pytest.approx(1.0)
+    assert one.q_hi("__all__") == pytest.approx(5.0)
+
+
+def test_one_sided_tails_can_use_different_risk_levels():
+    xs = [float(x) for x in range(1, 21)]
+    rows = [{"x": x} for x in xs]
+    y = [x + (5.0 if i < 2 else -1.0) for i, x in enumerate(xs)]
+    k = fit_kappa(XReg(), rows, y, alpha=0.10, one_sided=True,
+                  alpha_lower=0.10, alpha_upper=0.40)
+    assert k.alpha_lower == pytest.approx(0.10)
+    assert k.alpha_upper == pytest.approx(0.40)
+    assert k.q_hi("__all__") < fit_kappa(
+        XReg(), rows, y, alpha=0.10, one_sided=True).q_hi("__all__")
+    assert k.digest != fit_kappa(XReg(), rows, y, alpha=0.10,
+                                 one_sided=True).digest
+
+
+def test_one_sided_cqr_uses_both_quantile_tails():
+    xs = [float(x) for x in range(1, 21)]
+    rows = [{"x": x} for x in xs]
+    y = [x for x in xs]
+    y[0] = xs[0] + 4.0
+    y[7] = xs[7] + 4.0
+    dm = DecisionModel(XReg(), P.RegressorPolicy, features=FEATS,
+                       regime="off")
+    dm.calibrate(rows, y, alpha=0.10, method="cqr", one_sided=True,
+                 lower=Affine(1.0, -2.0), upper=Affine(1.0, 2.0))
+    d = dm.dispose({"x": 5.0})
+    assert d.prediction["lo"] == pytest.approx(5.0)
+    assert d.prediction["hi"] == pytest.approx(9.0)
+    assert dm.kappa.one_sided is True
+
+
+def test_one_sided_is_regressor_only_and_not_adaptive():
+    with pytest.raises(CalibrationError, match="regressor width"):
+        fit_kappa(XClf(), _rows([0.1] * 20), [0] * 20, alpha=0.10,
+                  one_sided=True)
+    xs = [float(x) for x in range(1, 21)]
+    rows = [{"x": x} for x in xs]
+    with pytest.raises(CalibrationError, match="not combinable"):
+        fit_kappa(XReg(), rows, [x + 1.0 for x in xs], alpha=0.10,
+                  one_sided=True, adaptive=True)
+    with pytest.raises(CalibrationError, match="need one_sided"):
+        fit_kappa(XReg(), rows, [x + 1.0 for x in xs], alpha=0.10,
+                  alpha_lower=0.2)
+
+
+def test_report_marks_one_sided_bounds():
+    from mjolnir_ml import report_data
+    xs = [float(x) for x in range(1, 21)]
+    rows = [{"x": x} for x in xs]
+    dm = DecisionModel(XReg(), P.RegressorPolicy, features=FEATS,
+                       regime="off")
+    dm.calibrate(rows, [x + 1.0 for x in xs], alpha=0.10, one_sided=True)
+    data = report_data(dm, rows)
+    assert data["contract"]["one_sided"] is True
+    assert data["contract"]["alpha_lower"] == pytest.approx(0.10)
+    assert data["contract"]["alpha_upper"] == pytest.approx(0.10)

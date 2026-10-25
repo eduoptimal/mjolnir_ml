@@ -114,14 +114,26 @@ forbidden verdicts, duplicate codes, non-literal rule metadata.
 
 ## 3. κ: certified claims, not confident ones
 
-`DecisionModel.calibrate(rows, y, alpha, group=None)` fits split conformal
+`DecisionModel.calibrate(rows, y, alpha, group=None)` fits conformal
 quantiles per group (Mondrian):
 
 * **classifier** — prediction set `{y : 1 − p_y(x) ≤ q}`; `certified` means the
   set is a **singleton** at the declared α; `set_size` travels with the
   disposition. Empty set ⇒ not certified (never a free claim);
 * **regressor** — interval `[pred − q, pred + q]`; policies gate on `lo`/`hi`, so
-  an action is released only when its whole interval clears the declared band;
+  an action is released only when its whole interval clears the declared band.
+  The width is selectable without changing the guarantee: `method="normalized"`
+  takes a fitted scale estimator and returns `[pred ± q·σ(x)]`; `method="cqr"`
+  takes fitted lower/upper quantile estimators and returns `[l(x) − q, u(x) + q]`.
+  Both are calibrated by `fit_kappa` exactly like split conformal, pin their
+  auxiliary estimators in the calibration digest, and fail closed (no interval)
+  when the auxiliary model emits a non-positive/non-finite width;
+  `one_sided=True` separates the tails: `lo` is calibrated at
+  `alpha_lower` (so `P(Y >= lo) >= 1 - alpha_lower`) and `hi` at `alpha_upper`.
+  That is the two-track form a policy needs when release reads only `hi` and
+  deny reads only `lo`; it is a **decision envelope**, not a joint interval
+  (joint coverage is only `1 - alpha_lower - alpha_upper` by the union bound),
+  and `report()` labels it that way;
 * **unknown group** — no calibrated set/interval: classifier reports
   `certified=False`, regressor omits `lo`/`hi` so a rule requiring them ⇒
   `abstain(missing:lo)`. Unknown is never zero;
@@ -130,6 +142,85 @@ quantiles per group (Mondrian):
 
 The disposition pins `alpha` and `calibration_digest`; recalibrating changes the
 digest and invalidates stale certificates — a feature, not a bug.
+
+### 3b. The risk track: `calibrate_risk` (action risk, not coverage)
+
+Coverage answers *where Y lies for this row*. It does not answer *whether an
+action is safe for the cohort I act on*. The second question is the decision
+risk, and it is a different guarantee:
+
+```
+coverage   P(Y in C(x)) >= 1 - alpha          per row
+risk       E[loss | action] <= alpha          over the selected cohort
+```
+
+`DecisionModel.calibrate_risk(rows, y, tau=..., estimator=crossing)` fits a
+probabilistic **crossing model** `p_event(x) = P(Y > tau | x)` on held-out rows
+and calibrates two action thresholds by Conformal Risk Control (CRC):
+
+```
+release_ok(p)  <=>  p <= lambda_release      loss = 1[Y > tau]
+deny_ok(p)     <=>  p >= lambda_deny         loss = 1[Y <= tau]
+```
+
+The resulting facts are `p_event`, `risk_release`, `risk_deny`; a policy that
+requires them gets `assurance="action_risk_control"` (the coverage facts
+`certified`/`lo`/`hi` get `pointwise_coverage`). The CRC guarantee is on the
+**expected risk of the selected cohort** under exchangeability, not a per-row
+certainty claim. A threshold of `None` means the budget cannot certify that
+action on the calibration data — the action is never taken (fail closed).
+
+For a classifier the same call applies: pass a 0/1 event (e.g. `y != y_hat`,
+or `y == dangerous_class`) and a fitted `predict_proba` estimator. That is
+selective classification with a finite-sample risk budget.
+
+### 3c. Feasibility: a rule that cannot fire is a contract defect
+
+`feasibility(dm, rows, threshold=...)` audits every compiled statement against
+the observed fact box:
+
+```
+observed    rows that actually fired the statement
+reachable   observed, or reachable in the observed fact box
+dead        neither — a declared rule that cannot fire
+```
+
+For a regressor threshold the decisive evidence is the attainable bound:
+`deny_lo > tau` is dead when `max(lo) <= tau`; `release_hi <= tau` is dead when
+`min(hi) > tau`. For the risk track it is `max(p_event) < lambda_deny` /
+`min(p_event) > lambda_release`. `report()` prints a `FEASIBILITY` section and
+names `DEAD RULES`; `readiness(..., thresholds=ReadinessThresholds(
+require_reachable_rules=True))` can make deployment fail on one.
+
+The honest conclusion is often that an action is unreachable for the model and
+threshold — e.g. a 90% lower bound for `Y > tau` cannot clear `tau` when the
+conditional spread is large. That is information for the policy owner (change
+the model, the threshold, or the action), not something a calibration method
+can manufacture.
+
+### 3d. Multivariate regime floor
+
+The default `fit_regime(rows)` is an axis-aligned box: a point is out of regime
+if **any** feature leaves its training min/max. Correlated points routinely
+cross one axis while staying in the joint support, so this over-abstains.
+
+```python
+dm.fit_regime(train_rows, method="mahalanobis",   # or "isolation_forest"
+              alpha_ood=0.02, calibration_rows=cal_rows)
+```
+
+`mahalanobis` fits a robust center/covariance (`MinCovDet`) and scores each row
+by its robust distance; `isolation_forest` scores by isolation depth. The
+cutoff `tau` is the conformal quantile of the calibration scores, so the
+false-abstention rate is bounded at `alpha_ood` under exchangeability (with the
+usual `n >= ceil(1/alpha_ood)-1` floor). `method="custom"` accepts a
+`score_fn(matrix) -> scores` for any detector. The calibrated cutoff and
+detector configuration are pinned in `regime_digest` and travel with every
+disposition and certificate. The report shows
+`regime required method=mahalanobis alpha_ood=0.02 tau=...`.
+
+The box remains the default (and is still recorded for reporting), so existing
+models and categorical features are unchanged.
 
 ### One artifact for review: `report()`
 
@@ -336,17 +427,25 @@ hazard recall reads 1.0 — the coverage/claims column is what exposes that vacu
 
 `certify(disp, key=...)` produces an HMAC-SHA256 certificate carrying the fact
 table, the four digests, α and the certificate id. `verify_certificate(cert,
-key=..., policy=...)` checks structure, signature, policy digest, and —
-for decisions over a complete fact table — **re-derives the verdict from the
-published facts with `Policy.dispose_facts`, without the learner**.
+key=..., policy=..., row=...)` checks four things, each fail-closed:
+**structure**; **signature** (HMAC over the canonical certificate);
+**binding** — the certificate id is recomputed from the pinned digests +
+verdict/basis/guarantee, and a supplied `row` is hashed against
+`claim_digest`; and — for decisions over a complete fact table —
+**replay**: the verdict/basis/missing are re-derived from the published facts
+with `Policy.dispose_facts` (the same function live `dispose()` ran), and the
+`guarantee`/`assurance` tags are re-derived from the policy. No learner, no
+training data, no repository live stack — and nothing estimator-class-specific:
+the policy replays whatever facts the table carries (regressor `lo`/`hi`,
+classifier `conf`/`certified`/`set_size`, risk `p_event`/…).
 
 `experiments/audit.py` (120 certificates):
 
 ```
 verified with key + policy : 120/120
 replayable (facts suffice) : 111/120
-tampered facts rejected    : True   (signature does not match)
-tampered verdict rejected  : True   (replay disagrees)
+tampered facts rejected    : True  (signature does not match the certificate)
+tampered verdict rejected  : True  (certificate_id does not match the pinned digests (binding check failed))
 wrong key rejected         : True
 ```
 
@@ -501,7 +600,7 @@ clones under `mjolnir_ml/vendors/`:
 ```bash
 cd mjolnir_research/mjolnir_ml
 uv pip install -e .            # or: pip install -e .
-python -m pytest tests -q      # 118 tests
+python -m pytest tests -q      # 156 tests
 python examples/quickstart.py
 # notebooks (already executed, outputs committed):
 #   examples/random_forest_regressor.ipynb
@@ -532,9 +631,9 @@ mjolnir_ml/
                    ChangeSet/Evaluation/Promotion, ApprovalAuthority
   costs.py         Costs, Chow thresholds, cost_policy -> Policy
   hazards.py       HazardLedger (union-only) + measure_completeness()
-  certificate.py   certify / verify_certificate (HMAC + replay)
+  certificate.py   certify / verify_certificate (HMAC + binding + replay)
   vendors/         the two clones
-tests/             118 tests: laws, DSL failures, calibration, ACI, costs,
+tests/             156 tests: laws, DSL failures, calibration, ACI, costs,
                    completeness, certificates, reports, sklearn integration,
                    notebook validity, model-ladder protocol, readiness,
                    live session/containment/change control, clones

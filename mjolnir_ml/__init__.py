@@ -19,10 +19,15 @@ STANDALONE: imports nothing outside this package at runtime; the frozen rule
 engine and the wire projection are vendored under mjolnir_ml/vendors.
 """
 from mjolnir_ml.calibration import (AdaptiveKappa, CalibrationError, Kappa,
-                                    fit_kappa)
+                                    REGRESSOR_METHODS, fit_kappa)
 from mjolnir_ml.certificate import (CERT_SCHEMA, CertificateError, certify,
                                     verify_certificate)
 from mjolnir_ml.costs import Costs, cost_policy
+from mjolnir_ml.feasibility import (FeasibilityError, FeasibilityReport,
+                                    RuleCheck, feasibility)
+from mjolnir_ml.regime import MultivariateRegimeFloor, RegimeError
+from mjolnir_ml.risk import (RiskError, RiskIndex, adverse_event,
+                             crc_threshold, crc_thresholds, fit_risk_index)
 from mjolnir_ml.dsl import (DecisionPolicyBase, DslError, compile_class, dsl,
                             rule)
 from mjolnir_ml.model import (BindError, DecisionModel, Disposition)
@@ -52,7 +57,12 @@ __all__ = [
     "DecisionModel", "Disposition", "BindError",
     "Policy", "Statement", "MODEL_FACTS",
     "Kappa", "AdaptiveKappa", "fit_kappa", "CalibrationError",
+    "REGRESSOR_METHODS",
     "Costs", "cost_policy",
+    "RegimeError", "MultivariateRegimeFloor",
+    "RiskError", "RiskIndex", "adverse_event", "crc_threshold",
+    "crc_thresholds", "fit_risk_index",
+    "FeasibilityError", "FeasibilityReport", "RuleCheck", "feasibility",
     "certify", "verify_certificate", "CertificateError", "CERT_SCHEMA",
     "Hazard", "HazardLedger", "measure_completeness",
     "readiness", "ReadinessReport", "ReadinessThresholds", "Gate",

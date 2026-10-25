@@ -20,9 +20,12 @@ from mjolnir_ml.vendors.core.verdict import (ABSTAIN, DENY, ESCALATE, ROUTE,
                                              evaluate)
 
 # Facts the harness supplies from the estimator's output. Reserved: a policy
-# may REQUIRE them, may never declare them as input facts.
+# may REQUIRE them, may never declare them as input facts. The risk facts are
+# supplied by a calibrated RiskIndex (an auxiliary crossing model); when no
+# index is fitted they are absent, so a rule requiring them abstains.
 MODEL_FACTS = frozenset({"pred", "conf", "p_positive", "certified",
-                         "set_size", "lo", "hi"})
+                         "set_size", "lo", "hi",
+                         "p_event", "risk_release", "risk_deny"})
 
 _ENGINE_VERDICT = {"ask": ESCALATE, "deny": DENY}
 
