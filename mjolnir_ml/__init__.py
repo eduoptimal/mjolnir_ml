@@ -18,6 +18,9 @@
 STANDALONE: imports nothing outside this package at runtime; the frozen rule
 engine and the wire projection are vendored under mjolnir_ml/vendors.
 """
+from mjolnir_ml.causal import (CausalClaim, CausalError, CausalOracle,
+                                CausalSession, Estimate, Series, Strategy,
+                                Table, do, event_study, series_from_journal)
 from mjolnir_ml.calibration import (AdaptiveKappa, CalibrationError, Kappa,
                                     REGRESSOR_METHODS, fit_kappa)
 from mjolnir_ml.certificate import (CERT_SCHEMA, CertificateError, certify,
@@ -33,6 +36,16 @@ from mjolnir_ml.dsl import (DecisionPolicyBase, DslError, compile_class, dsl,
 from mjolnir_ml.model import (BindError, DecisionModel, Disposition)
 from mjolnir_ml.hazards import (Hazard, HazardLedger,
                                  measure_completeness)
+from mjolnir_ml.discovery import (CERTIFIED, CENSUS_VERDICTS, DECLARED,
+                                  DECLINED, REFUTED, Admission, Candidate,
+                                  Census, Containment as DiscoveryContainment,
+                                  DiscoveryDetection, DiscoveryDetector,
+                                  DiscoveryError, DiscoveryEvaluation,
+                                  DiscoveryGate, DiscoverySession,
+                                  KnowledgeLedger, KnowledgeRecord,
+                                  certify_admission,
+                                  default_discovery_detectors,
+                                  verify_admission_certificate)
 from mjolnir_ml.live import (Approval, ApprovalAuthority, ChangeGate,
                              ChangeSet, Containment, Detection, DetectorSpec,
                              Evaluation, Journal, LiveSession, Promotion,
@@ -71,6 +84,16 @@ __all__ = [
     "default_detectors", "Containment", "Retraction",
     "ChangeSet", "ChangeGate", "Evaluation", "Promotion",
     "Approval", "ApprovalAuthority",
+    "DiscoverySession", "Census", "Candidate", "CENSUS_VERDICTS",
+    "CERTIFIED", "DECLARED", "DECLINED", "REFUTED",
+    "DiscoveryGate", "DiscoveryEvaluation", "Admission",
+    "KnowledgeLedger", "KnowledgeRecord", "DiscoveryError",
+    "DiscoveryDetector", "DiscoveryDetection",
+    "default_discovery_detectors", "DiscoveryContainment",
+    "certify_admission", "verify_admission_certificate",
+    "CausalSession", "CausalClaim", "CausalOracle", "CausalError",
+    "Strategy", "do", "Table", "Series", "Estimate",
+    "event_study", "series_from_journal",
     "Pair", "omega_pair", "wilson", "audit", "audit_model",
     "report", "report_data",
     "degenerate_controls",

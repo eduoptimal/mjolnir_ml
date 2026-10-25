@@ -594,6 +594,11 @@ retraction, with the review queue printed at each batch.
   certificate format does not change.
 * `@dsl` predicates are pure over declared facts; they cannot express
   cross-row logic, temporal conditions or cost trade-offs inside one predicate.
+* Discovery is a *claim-audit* loop, not invention: a candidate is only as good
+  as the declared criterion and the audit population. The twin bounds
+  overreach; it does not prove completeness. A `REFUTED -> CERTIFIED` move is
+  evidence in conflict with the record, which is why it needs a signature
+  rather than a better argument.
 
 ---
 
@@ -616,6 +621,15 @@ The public vocabulary is differentiated and load-bearing — one verb, one job:
 | `report` / `report_data` | render / structure the whole run |
 | `cost_policy(costs)` | compile cost thresholds into a `Policy` |
 | `measure_completeness(disps, rows, ledger)` | score a batch against an external hazard oracle |
+| `propose(proposer)` | journal UNLABELED candidates from a producer (never a label) |
+| `evaluate(candidate, oracle)` | the independent oracle measures the four-number census move |
+| `promote(candidate, oracle, approval=...)` | evidence-gated admission into the knowledge ledger |
+| `retire(id, refutation)` | union-only retirement: record the refutation, revert the claims |
+| `certify_admission` / `verify_admission_certificate` | pin / check the move (structure, HMAC, binding, census replay) |
+| `do(var, value)` / `CausalClaim` | a `do()`-estimand with a declared acceptance region and assumptions |
+| `Strategy(kind, ...)` | an identification strategy: `backdoor`, `iv`, `did`, `rdd`, `ci`, `its` |
+| `CausalSession` | the discovery loop over causal claims; strategies are capabilities |
+| `event_study` / `series_from_journal` | interrupted time series over the live journal (pre-trend + placebo gates) |
 
 Model facts: `pred`, `conf`, `p_positive` (binary classifiers only),
 `certified`, `set_size`, `lo`, `hi`, `p_event`, `risk_release`, `risk_deny`.
@@ -637,12 +651,14 @@ clones under `mjolnir_ml/vendors/`:
 ```bash
 cd mjolnir_research/mjolnir_ml
 uv pip install -e .            # or: pip install -e .
-python -m pytest tests -q      # 156 tests
+python -m pytest tests -q      # 206 tests
 python examples/quickstart.py
-# notebooks (already executed, outputs committed):
+# notebooks (already executed, outputs committed; pip install 'mjolnir-ml[examples]'):
 #   examples/random_forest_regressor.ipynb
 #   examples/random_forest_classifier.ipynb
 #   examples/flywheel_live.ipynb
+#   examples/discovery_example.ipynb
+#   examples/causal_analysis.ipynb
 python experiments/bench.py        # 3 datasets x 3 learners
 python experiments/drift.py        # ACI under concept drift
 python experiments/completeness.py # external hazard ledger
@@ -675,12 +691,117 @@ mjolnir_ml/
   hazards.py       HazardLedger (union-only) + measure_completeness()
   certificate.py   certify / verify_certificate (structure + HMAC + binding
                    + policy replay; row-integrity check)
+  discovery.py     DiscoverySession: Census (four numbers), unlabeled Candidate,
+                   independent-oracle gates (tests + twin), KnowledgeLedger
+                   (union-only), containment, certify_admission
+  causal.py        do()/CausalClaim/Strategy: backdoor, IV, DiD, RDD,
+                   conditional independence, journal event study; placebos as
+                   twins; markov_class; CausalSession
   vendors/         the two clones
-tests/             156 tests: laws, DSL failures, calibration, ACI, costs,
+tests/             206 tests: laws, DSL failures, calibration, ACI, costs,
                    completeness, certificates, reports, sklearn integration,
                    notebook validity, model-ladder protocol, readiness,
-                   live session/containment/change control, clones
-examples/          quickstart + three executed notebooks (incl. flywheel)
+                   live session/containment/change control, discovery laws,
+                   causal identification, clones
+examples/          quickstart, five executed notebooks (flywheel, discovery,
+                   causal analysis) + causal_analysis.md
 experiments/       bench, drift, completeness, costs, audit, model_ladder
                    + results JSON/CSV and curve PNGs
 ```
+
+## 10. The second loop: `DiscoverySession`
+
+The flywheel decides rows; discovery admits **capabilities**. `DiscoverySession`
+runs the same laws over a claim corpus — a prover registry export, a decline
+census, any `claim -> verdict` mapping:
+
+```python
+session = DiscoverySession(corpus, reasons=declines_by_reason,
+                           approval_verifier=authority.verify)   # no key held
+candidate = session.propose(mine_conjunction_rules)[0]   # unlabeled
+ev = session.evaluate(candidate, audit_rule)             # independent oracle
+adm = session.promote(candidate, audit_rule)             # evidence-gated
+cert = certify_admission(adm, key=KEY)                   # the move, pinned
+```
+
+| law | encoding |
+|---|---|
+| proposer never disposes | a `Candidate` is unlabeled (`evidence["expect"]` is refused); an oracle whose identity equals `proposed_by` is refused, journaled, and reports a **critical** `self_certification` alarm |
+| four numbers, never a scalar | `Census` is `(certified, declared, declined, refuted)`; `as_dict()` has exactly those keys, and the frontier is the decline census by reason |
+| twins are mandatory | `tests` (what the rung must newly certify) and `twin` (the near-miss battery) are checked by the oracle; either absent or failing ⇒ no admission |
+| tightening free, loosening signed | certifying a previously `REFUTED` claim is `may_loosen` and needs an `Approval` verified by a verifier the session holds; a declared frontier class without reason data fails closed |
+| union-only ledger | `KnowledgeLedger` never reuses ids; `retire(id, refutation)` records the refutation and reverts the admitted claims to their pre-admission verdicts |
+| critical alarms contain | `tick()` recomputes `new_refuted`, `self_certification` and `decline_growth` from the journal; the criticals contain the session (admissions refused) until a signed `uncontain`, and the epoch keeps history from re-alarming |
+| the move is certifiable | `certify_admission` pins the candidate, both censuses and every gate under an HMAC binding id, **replays** the census-arithmetic gates, and lists the oracle-dependent gates as `attested` |
+
+The claim axis is deliberately a different vocabulary from the disposition axis
+(`certified/declared/declined/refuted` vs `release/ask/deny/abstain`), so a
+disposition can never be mistaken for a proof.
+
+End to end on `breast_cancer` — classification rules mined from the training
+split, audited on a held-out split, with the frontier move, the signed
+loosening, containment, the certificate and the retirement:
+`examples/discovery_example.ipynb` (executed, outputs committed).
+
+## 11. The causal layer: `do()`, identification, placebos
+
+`causal.py` puts causal estimands on the discovery loop. A **strategy is a
+capability**; a claim is a `do()` estimand with a declared acceptance region; a
+**placebo is the twin**; and the frontier is the decline census by identification
+failure (`unidentified:*`, `positivity_violation`, `weak_instrument`,
+`assumption_violated:*`, `underpowered`, `ambiguous_ci`).
+
+```python
+from mjolnir_ml import CausalClaim, CausalSession, Strategy, do
+
+claim = CausalClaim(kind="ate", outcome="y", treatment="x",
+                    arms=(do("x", 1), do("x", 0)),
+                    criterion={"min": 0.8, "max": 1.2},
+                    assumptions=("no unmeasured confounding for the "
+                                 "declared adjustment set",))
+session = CausalSession([claim], table=rows)
+strategy = Strategy("backdoor", adjust=("z",))
+adm = session.promote(session.candidate(strategy=strategy, targets=[claim]),
+                      session.strategy(strategy))
+```
+
+| claim kind | estimand |
+|---|---|
+| `association` | `E[Y|X=x1] − E[Y|X=x0]` — no identification claim, refutable on its own |
+| `ate` | `ATE[Y | do(X=x1), do(X=x0)]` |
+| `late` | `LATE[Y | do(X); Z]` — complier effect under monotonicity |
+| `att` | `ATT[Y | group, time ≥ post]` — DiD |
+| `rdd` | `LATE[Y | running, cutoff]` — sharp design |
+| `independence` | `X ⟂ Y | S` — bounded by a declared MDE |
+| `intervention_effect` | effect of an event in a journal series (tier 1) |
+
+**What gates the verdict, and what is merely declared.** Testable shadows gate:
+positivity per cell, instrument relevance (first-stage t), DiD pre-trends,
+RDD covariate continuity, CI power, the ITS pre-trend and placebo date. Untestable
+parts ship as `assumptions` on the claim and are listed by `assumptions()`:
+no unmeasured confounding, exclusion, monotonicity, parallel trends, continuity,
+no simultaneous shock. A causal claim with no declared assumptions does not
+exist — the type refuses it.
+
+**`CERTIFIED` is narrow on purpose**: *under the declared assumptions, the
+identified interval lies inside the claim's acceptance region*. It is not "the
+effect is true". `REFUTED` requires an identified interval entirely outside the
+region; a straddling interval is `DECLINED` (the ambiguous band). Certifying a
+claim the record holds as `REFUTED` (a prior study's verdict) is `may_loosen` and
+needs an external signature.
+
+**Structure is an equivalence class.** `CausalSession.markov_class(strategy)`
+reports the skeleton and colliders the independences identify, and states that
+edge orientation is not identified from observational data. There is no DAG and
+no edge-score.
+
+Run end to end on the **same `breast_cancer` classifier as the discovery
+example** — the causal chain is rendered in the notebook as plain-text
+diagrams with `phart` (an examples-only dependency; the harness never imports
+it):
+`examples/causal_analysis.ipynb` (executed) with
+`examples/causal_analysis.md` as its extended explanation — etiology declined,
+over-adjustment contained, the paired mechanistic ATE with an exact placebo,
+bounded independence and a Berkson collider, and the audit stream as an
+interrupted time series. `tests/test_causal.py` also pins IV/Wald, DiD and RDD
+on declared synthetic SCMs.
