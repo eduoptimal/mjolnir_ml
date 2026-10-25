@@ -24,7 +24,9 @@ dm = (DecisionModel(fitted_estimator, MammographyPolicy, features=features)
       .calibrate(cal_rows, y_cal, alpha=0.10)) # conformal trust index κ
 
 d = dm.dispose(row)          # release | ask | deny | abstain + basis + certificate
-dm.replay(d, row)            # replay the certificate: True
+cert = certify(d, key=b"audit-key")
+verify_certificate(cert, key=b"audit-key", policy=MammographyPolicy,
+                   row=row)  # structure · signature · binding · replay
 ```
 
 `pred`/`conf`/`p_positive` are model facts; `certified`/`set_size` are the conformal
@@ -43,7 +45,8 @@ Contract     Γ = (policy, alpha, regime)        declared, digested
 Index        κ = conformal calibration           per-region, finite-sample
 Kernel       M = the fitted estimator           swappable, never trusted
 Representation R = features + training bounds   input contract
-Certificate  C = (claim, policy, model, κ) digests + verdict + basis
+Certificate  C = (claim, policy, model, κ [, risk, regime]) digests
+               + verdict + basis + guarantee/assurance
 ```
 
 ```
@@ -59,7 +62,11 @@ property follows (pinned by `tests/test_model.py`). The disposition's
 `guarantee` is **`declared`** (the deciding statements read only stated facts)
 or **`model_backed`** (a deciding statement read estimator output); the
 conformal proof mark is the separate fact `certified` (a prediction-set
-singleton). The two never share a name.
+singleton). The two never share a name. `assurance` goes further and records
+what the deciding statements actually used: `declared`, `model_backed`,
+`pointwise_coverage` (conformal set/interval facts), `action_risk_control`
+(CRC risk facts), or `dual_track` (a release fired from both coverage and CRC
+rules). It is derived from the policy and the fired basis, never authored.
 
 | property | why it is a corollary |
 |---|---|
@@ -67,7 +74,7 @@ singleton). The two never share a name.
 | model never disposes | verdicts come only from the policy; a confident learner cannot manufacture one |
 | only-tighten | ask/deny/premises can only make the outcome stricter than a release |
 | unknown ≠ zero | uncalibrated group ⇒ no certified set/interval; required-and-absent ⇒ abstain |
-| replayable | claim/policy/model/calibration digests + certificate id; `verify()` recomputes |
+| replayable | pinned digests (claim/policy/model/calibration, plus risk/regime when present); `verify()` rebuilds the id, hashes an optional row, and replays the policy over the published facts |
 
 **Two-phase compile.** The frozen engine has no `release` verdict (`ROUTE` means
 "no obligation fired"). Premises compile to abstain-rules (phase 1), ask/deny to
@@ -160,15 +167,26 @@ and calibrates two action thresholds by Conformal Risk Control (CRC):
 
 ```
 release_ok(p)  <=>  p <= lambda_release      loss = 1[Y > tau]
-deny_ok(p)     <=>  p >= lambda_deny         loss = 1[Y <= tau]
+deny_ok(p)     <=>  p >  lambda_deny         loss = 1[Y <= tau]
+                   lambda_release <= lambda_deny
 ```
+
+The two thresholds are chosen **jointly** on the same CRC grid, so the release
+and deny sets are disjoint by construction; the middle `(lambda_release,
+lambda_deny]` is `ask`. The pair is the one that maximizes the acted cohort
+while both corrected empirical risks satisfy their budgets. When the budgets
+cannot support a gap, the ask band is empty (a binary split is the honest
+outcome); when one action cannot be certified, its threshold is `None` and the
+action is never taken (fail closed).
 
 The resulting facts are `p_event`, `risk_release`, `risk_deny`; a policy that
 requires them gets `assurance="action_risk_control"` (the coverage facts
-`certified`/`lo`/`hi` get `pointwise_coverage`). The CRC guarantee is on the
-**expected risk of the selected cohort** under exchangeability, not a per-row
-certainty claim. A threshold of `None` means the budget cannot certify that
-action on the calibration data — the action is never taken (fail closed).
+`certified`/`lo`/`hi` get `pointwise_coverage`; a release that fires both
+tracks gets `dual_track`). The CRC guarantee is on the **expected risk of the
+selected cohort** under exchangeability, not a per-row certainty claim. Per-
+action budgets are marginal; a joint guarantee over both actions needs
+`alpha_release + alpha_deny <= alpha_total` (union bound), and the report
+states them separately.
 
 For a classifier the same call applies: pass a 0/1 event (e.g. `y != y_hat`,
 or `y == dangerous_class`) and a fitted `predict_proba` estimator. That is
@@ -313,10 +331,12 @@ produces — and the learner becomes a swappable component inside it.
 4. **Industrial, energy, actuarial.** Regression intervals gate actuation: an
    action runs only if the whole conformal interval clears the declared band —
    Chow's reject option with a finite-sample guarantee.
-5. **Model risk management / EU AI Act style audits.** Four digests + a
-   certificate id per decision are the evidence trail: the auditor replays the
-   decision offline without the model's code, and a policy/calibration drift is
-   a digest mismatch, not a discovery.
+5. **Model risk management / EU AI Act style audits.** The pinned digests
+   (claim/policy/model/calibration, plus risk/regime when present) and the
+   certificate id per decision are the evidence trail: the auditor rebuilds the
+   id, checks the input hash, and replays the policy over the published facts
+   without the model's code. A policy/calibration drift is a digest mismatch,
+   not a discovery.
 
 The economic claim: this is the layer that converts *"we cannot put this model
 in a regulated process"* into *"we deploy the harness; the model is one
@@ -426,8 +446,9 @@ hazard recall reads 1.0 — the coverage/claims column is what exposes that vacu
 ### 6.5 Signed certificates for third-party audit
 
 `certify(disp, key=...)` produces an HMAC-SHA256 certificate carrying the fact
-table, the four digests, α and the certificate id. `verify_certificate(cert,
-key=..., policy=..., row=...)` checks four things, each fail-closed:
+table, the pinned digests (claim/policy/model/calibration, plus risk/regime when
+present), α and the certificate id. `verify_certificate(cert, key=...,
+policy=..., row=...)` checks four things, each fail-closed:
 **structure**; **signature** (HMAC over the canonical certificate);
 **binding** — the certificate id is recomputed from the pinned digests +
 verdict/basis/guarantee, and a supplied `row` is hashed against
@@ -438,6 +459,17 @@ with `Policy.dispose_facts` (the same function live `dispose()` ran), and the
 training data, no repository live stack — and nothing estimator-class-specific:
 the policy replays whatever facts the table carries (regressor `lo`/`hi`,
 classifier `conf`/`certified`/`set_size`, risk `p_event`/…).
+
+```python
+verify_certificate(cert, key=KEY, policy=Policy, row=row)
+# structure · signature · binding · replay; raises CertificateError on any miss
+```
+
+The binding check rebuilds `certificate_id` from the pinned digests with the
+same recipe live `_pack` uses, and hashes the supplied `row` against
+`claim_digest`. Replay re-derives verdict/basis/missing AND the
+`guarantee`/`assurance` tags from the policy, so an unsigned certificate cannot
+relabel them even after the public id recipe is recomputed.
 
 `experiments/audit.py` (120 certificates):
 
@@ -571,21 +603,26 @@ The public vocabulary is differentiated and load-bearing — one verb, one job:
 
 | name | meaning |
 |---|---|
-| `fit_regime(rows)` | record the training support (the I3 floor) |
-| `calibrate(rows, y, alpha, ...)` | fit κ (conformal; `adaptive=True` for ACI) |
+| `fit_regime(rows, method=..., calibration_rows=...)` | record the support: per-feature box (default) or a calibrated multivariate floor |
+| `calibrate(rows, y, alpha, ...)` | fit κ (conformal; `one_sided`, `normalized`/`cqr`, `adaptive=True` for ACI) |
+| `calibrate_risk(rows, y, tau=..., estimator=...)` | fit the CRC action thresholds (`p_event`/`risk_release`/`risk_deny`) |
 | `observe(row, y)` | consume a realized outcome into κ |
 | `dispose(row)` | decide one row — the only disposer |
 | `replay(disp, row)` | re-derive a disposition from (policy, facts) |
 | `fit_kappa(...)` | fit κ directly, without a `DecisionModel` |
-| `certify` / `verify_certificate` | issue / check a signed proof |
+| `fit_risk_index(...)` | fit the CRC thresholds directly |
+| `feasibility(dm, rows, threshold=...)` | audit whether every declared rule can fire |
+| `certify` / `verify_certificate` | issue / check a signed proof (structure, signature, binding, replay) |
 | `report` / `report_data` | render / structure the whole run |
 | `cost_policy(costs)` | compile cost thresholds into a `Policy` |
 | `measure_completeness(disps, rows, ledger)` | score a batch against an external hazard oracle |
 
 Model facts: `pred`, `conf`, `p_positive` (binary classifiers only),
-`certified`, `set_size`, `lo`, `hi`. Verdicts: `release | ask | deny |
-abstain`. Guarantee tags: **`declared`** / **`model_backed`** — deliberately
-different from the conformal fact `certified`.
+`certified`, `set_size`, `lo`, `hi`, `p_event`, `risk_release`, `risk_deny`.
+Verdicts: `release | ask | deny | abstain`. Guarantee tags: **`declared`** /
+**`model_backed`** — deliberately different from the conformal fact
+`certified`. Assurance tags (derived): `declared`, `model_backed`,
+`pointwise_coverage`, `action_risk_control`, `dual_track`.
 
 ## 9. Standalone, vendored, tested
 
@@ -623,7 +660,12 @@ mjolnir_ml/
   policy.py        Statement/Policy, canonical digest, engine compile,
                    dispose_facts (the estimator-free audit path)
   model.py         DecisionModel, Disposition, bind/regime/dispose/verify/observe
-  calibration.py   Kappa + AdaptiveKappa (split conformal, Mondrian, ACI)
+  calibration.py   Kappa + AdaptiveKappa (split conformal, Mondrian, ACI,
+                   normalized/CQR, one-sided tails)
+  risk.py          CRC action thresholds, RiskIndex, p_event/risk_release/risk_deny
+  regime.py        multivariate regime floors (mahalanobis/isolation forest/custom)
+  feasibility.py   reachability audit, dead rules, readiness gate
+  _digest.py       shared canonical digest helpers
   pair.py          Omega pair, Wilson, audit, degenerate controls
   report.py        report() / report_data(): one text/table for the whole run
   readiness.py     readiness() / ReadinessReport: the one-shot gate
@@ -631,7 +673,8 @@ mjolnir_ml/
                    ChangeSet/Evaluation/Promotion, ApprovalAuthority
   costs.py         Costs, Chow thresholds, cost_policy -> Policy
   hazards.py       HazardLedger (union-only) + measure_completeness()
-  certificate.py   certify / verify_certificate (HMAC + binding + replay)
+  certificate.py   certify / verify_certificate (structure + HMAC + binding
+                   + policy replay; row-integrity check)
   vendors/         the two clones
 tests/             156 tests: laws, DSL failures, calibration, ACI, costs,
                    completeness, certificates, reports, sklearn integration,
