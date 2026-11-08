@@ -1,6 +1,6 @@
 """mjolnir_ml.calibration — κ: the calibrated trust index over a learner.
 
-THE LOAD-BEARING IDEA (COHERENCE.md §5, CERTIFIABILITY.md): what a learner is
+THE LOAD-BEARING IDEA: what a learner is
 allowed to *claim* is not its softmax. It is a finite-sample guarantee about
 the learner's own error, estimated per region and pinned by digest. This module
 implements split conformal calibration with optional Mondrian (group) splitting:
@@ -50,7 +50,7 @@ an action is releasable only if its entire conformal interval clears the
 declared threshold.
 
 NON-CLAIMS: coverage is marginal-per-group and relative to exchangeability.
-Under drift, coverage can degrade (the beta_release G4 result); the honest
+Under drift, coverage can degrade (the G4 result); the honest
 responses are (a) regroup, (b) recalibrate, (c) adaptive conformal — not a
 claim that the guarantee survives distribution shift.
 """

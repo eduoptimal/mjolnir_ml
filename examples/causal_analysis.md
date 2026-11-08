@@ -431,7 +431,7 @@ both occur, and the placebo says we are not fooling ourselves about why."*
 ## Reproduce
 
 ```bash
-cd mjolnir_research/mjolnir_ml
+cd mjolnir_ml
 pip install "mjolnir-ml[examples]"    # sklearn + phart + networkx, for the notebook
 python -m jupyter nbconvert --to notebook --execute --inplace examples/causal_analysis.ipynb
 python -m pytest tests/test_causal.py -q      # 25 tests pin the machinery

@@ -9,3 +9,10 @@ htmlcov/
 .mj/
 .mjignore
 .DS_Store
+experiments/
+.venv/
+build/
+dist/
+.ipynb_checkpoints/
+.mypy_cache/
+.ruff_cache/

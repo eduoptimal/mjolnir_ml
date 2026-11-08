@@ -1,6 +1,6 @@
 """mjolnir_ml.hazards — an EXTERNAL hazard oracle + completeness measurement.
 
-`CERTIFIABILITY.md` (beta_release) turns "is the policy complete?" — which is
+The certifiability contract turns "is the policy complete?" — which is
 not solvable — into a measured, bounded number:
 
     H          an external hazard oracle: predicates over rows, computed from

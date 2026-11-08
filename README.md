@@ -6,6 +6,16 @@ declared policy, a calibrated trust index, and a replayable certificate around
 it — and make every decision that cannot be certified **abstain**, by
 construction.
 
+## Companion books
+
+This repository accompanies:
+
+* **Fail-Closed Machine Learning: Bounded Agency and the Limits of Validity**
+  (Safe Artificial Intelligence Systems, Book 1) —
+  [Amazon](https://www.amazon.com/dp/B0GZKCNR3C)
+* **Certified Ignorance: The Machine That Knows What It Cannot Know** —
+  Eduardo Perez Denadai
+
 ```python
 @dsl
 class MammographyPolicy(DecisionPolicyBase):
@@ -37,8 +47,7 @@ the declared policy disposes.
 
 ## 1. The type and the law
 
-One object, from the Ω-TD purest form (`mjolnir_cartographer/beta_release`),
-instantiated for supervised learners:
+One object, from the Ω-TD form, instantiated for supervised learners:
 
 ```
 Contract     Γ = (policy, alpha, regime)        declared, digested
@@ -279,7 +288,7 @@ policy makes every scalar look mediocre; NEVER (the policy that says nothing)
 reports **⊥, 0** while every scalar metric would call it safe — the
 constructibility table, reproduced on your batch.
 
-### Measured on real sklearn data (`experiments/bench.py`, α = 0.10)
+### Measured on real sklearn data (α = 0.10)
 
 Three decision shapes × three learners; **harness vs. the same fitted learner as
 a total decision model** (which never abstains):
@@ -304,8 +313,8 @@ learners' calibrated intervals are ~206–240 target units wide against a 320-un
 range, so the harness abstains almost everywhere. That is the floor working —
 wide uncertainty cannot be certified into narrow decisions.
 
-Reproduce: `python experiments/bench.py` (writes JSON under
-`experiments/results/`).
+Results are measured with the companion evaluation suite; generated artifacts are
+not part of this repository.
 
 ---
 
@@ -347,17 +356,17 @@ that survives the degenerate policies every scalar metric fails.
 
 ## 6. The value ladder, measured
 
-Four rungs build on the base harness. Each has a runnable experiment and tests.
+Four rungs build on the base harness. Each has tests and a measured result.
 
 ### 6.1 Adaptive conformal for drift (ACI)
 
 Static conformal is a promise about exchangeable data. Under drift it degrades —
-the beta_release **G4** finding. `calibrate(..., adaptive=True)` fits an ACI
+the known ACI failure mode (G4). `calibrate(..., adaptive=True)` fits an ACI
 index: after each decision, `observe(row, y)` updates the per-group risk level
 from realized miscoverage (`alpha_{t+1} = alpha_t + gamma*(alpha0 - err_t)`),
 so the prediction set widens after errors and narrows when it over-covers.
 
-`experiments/drift.py` (breast_cancer, concept drift: 45% label flips after row 70):
+Breast cancer, concept drift (45% label flips after row 70):
 
 | arm | coverage pre | coverage post | mean set pre | mean set post |
 |---|---:|---:|---:|---:|
@@ -370,13 +379,13 @@ coverage → alpha up → narrower set) and the monotone recovery direction.
 
 ### 6.2 Policy completeness vs an external hazard oracle
 
-`HazardLedger` + `measure_completeness()` implement the CERTIFIABILITY protocol:
+`HazardLedger` + `measure_completeness()` implement the certifiability protocol:
 **H** is external (geometry, spec sheets, incident records — never the policy);
 the ledger is union-only (retiring a hazard needs a refutation record);
 precision = 1 − false certificates, recall = hazards caught, coverage = price.
 
-`experiments/completeness.py` (breast_cancer; `worst_concave_points` held out of
-the model, so `hidden_concavity` is outside σ(X)):
+Breast cancer with `worst_concave_points` held out of the model, so
+`hidden_concavity` is outside σ(X):
 
 | policy | precision | recall | coverage | false certs | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -394,8 +403,8 @@ hazard sits at the independence ceiling.
 optimal Chow bands into the same IR every other policy uses, and
 `require_certified=True` adds the conformal singleton gate.
 
-`experiments/costs.py` (breast_cancer, calibrated probabilities; C_FR=20,
-C_FD=5, C_A=2 → release < 0.10 < ask < 0.60 < deny):
+Breast cancer, calibrated probabilities (C_FR=20, C_FD=5, C_A=2 →
+release < 0.10 < ask < 0.60 < deny):
 
 | arm | expected cost /1000 | realized cost /1000 | falseRel | falseDeny | asked |
 |---|---:|---:|---:|---:|---:|
@@ -412,7 +421,7 @@ information — either the calibration is sharp enough that the ask band is not
 worth its price at these costs, or the costs are mispriced. Report both axes;
 a single realized number on a small sample is not the decision.
 
-### 6.4 Does a better model make better decisions? (`experiments/model_ladder.py`)
+### 6.4 Does a better model make better decisions?
 
 Two axes, seed-paired: **training fraction** 15→100% × **RandomForest capacity**
 (poor = 10 trees/depth 3/leaf 20 · medium = 100/depth 10/leaf 5 · rich =
@@ -439,9 +448,8 @@ Two findings worth keeping:
    claim rate. The harness reports the truth instead of assuming "bigger is better".
 
 Spearman(model quality, decision recall): wine **+0.51**, diabetes **−0.25** over
-the swept cells. Plots: `experiments/results/figures/model_ladder_wine.png` and
-`model_ladder_diabetes.png`. The poor model at small data has **0 claims**, where
-hazard recall reads 1.0 — the coverage/claims column is what exposes that vacuity.
+the swept cells. The poor model at small data has **0 claims**, where hazard
+recall reads 1.0 — the coverage/claims column is what exposes that vacuity.
 
 ### 6.5 Signed certificates for third-party audit
 
@@ -471,7 +479,7 @@ same recipe live `_pack` uses, and hashes the supplied `row` against
 `guarantee`/`assurance` tags from the policy, so an unsigned certificate cannot
 relabel them even after the public id recipe is recomputed.
 
-`experiments/audit.py` (120 certificates):
+The certificate audit (120 certificates):
 
 ```
 verified with key + policy : 120/120
@@ -543,7 +551,7 @@ candidate adds a release on any logged row (`may_loosen`) — an external approv
 that verifies against the session's verifier. Promotion creates a new immutable
 version (`with_policy` / `with_estimator`); the old version remains for rollback.
 
-`experiments/flywheel.py` deploys a diabetes regressor over six batches with staged
+The flywheel demo deploys a diabetes regressor over six batches with staged
 drift, injects an age-band hazard, and runs the whole loop. Measured run:
 
 | batch | release | ask | deny | abstain | coverage | MAE | alpha_t | hazard rel. |
@@ -564,10 +572,8 @@ found two design bugs that are now fixed and documented in the generated report:
 gate), and the hazard detector must be epoch-aware (otherwise history re-contains the
 session after every repair).
 
-Outputs: `experiments/results/flywheel_journal.jsonl`, results JSON/CSV, two figures
-under `experiments/results/figures/` (`fig_flywheel_batches.png`,
-`fig_flywheel_actions.png`), and an auto-written `flywheel_report_*.md` with the
-batch table, detections, actions, human queue, design lessons and limits.
+The run writes a journal, results tables, figures and an auto-written report; those
+artifacts are not part of this repository.
 
 A self-contained walkthrough is in `examples/flywheel_live.ipynb`: readiness →
 four live batches → containment → replay/Pareto repair → signed uncontain →
@@ -577,7 +583,7 @@ retraction, with the review queue printed at each batch.
 
 * Coverage is conformal, **relative to exchangeability and the declared α**.
   ACI restores coverage under drift only approximately in a finite window, and
-  pays for it in width (0.84 → 1.28 labels on the drift experiment). Regroup,
+  pays for it in width (0.84 → 1.28 labels on the drift run). Regroup,
   recalibrate or adapt; never quote a static coverage number under drift.
 * The policy is declared, not verified: an incomplete policy misses hazards.
   Completeness is measurable *against an external hazard oracle*, never against
@@ -643,29 +649,24 @@ Verdicts: `release | ask | deny | abstain`. Guarantee tags: **`declared`** /
 `mjolnir_ml` imports nothing else from this repo at runtime. It depends on two
 clones under `mjolnir_ml/vendors/`:
 
-* `vendors/core/verdict.py` — **byte-identical** clone of the frozen rule engine
-  (`src/mjolnir_router/core/verdict.py`), pinned by a test;
-* `vendors/wire.py` — clone of `mjolnir_disposition/engine.py` with exactly one
-  delta: the import line.
+* `vendors/core/verdict.py` — **byte-identical** clone of the frozen rule engine,
+  pinned by a test;
+* `vendors/wire.py` — clone of the disposition engine with exactly one delta: the
+  import line.
 
 ```bash
-cd mjolnir_research/mjolnir_ml
-uv pip install -e .            # or: pip install -e .
-python -m pytest tests -q      # 210 tests
+git clone https://github.com/eduoptimal/mjolnir_ml.git
+cd mjolnir_ml
+pip install -e ".[examples]"
+python -m pytest tests -q      # 205 tests
 python examples/quickstart.py
-# notebooks (already executed, outputs committed; pip install 'mjolnir-ml[examples]'):
+# notebooks (already executed, outputs committed):
 #   examples/random_forest_regressor.ipynb
 #   examples/random_forest_classifier.ipynb
 #   examples/flywheel_live.ipynb
 #   examples/discovery_example.ipynb
 #   examples/causal_analysis.ipynb
-python experiments/bench.py        # 3 datasets x 3 learners
-python experiments/drift.py        # ACI under concept drift
-python experiments/completeness.py # external hazard ledger
-python experiments/costs.py        # cost-sensitive bands
-python experiments/audit.py        # signed certificate audit
-python experiments/model_ladder.py # learner → decision learning curves
-python experiments/flywheel.py    # readiness, live batches, containment, repair
+
 ```
 
 Layout:
@@ -698,15 +699,13 @@ mjolnir_ml/
                    conditional independence, journal event study; placebos as
                    twins; markov_class; CausalSession
   vendors/         the two clones
-tests/             210 tests: laws, DSL failures, calibration, ACI, costs,
+tests/             205 tests: laws, DSL failures, calibration, ACI, costs,
                    completeness, certificates, reports, sklearn integration,
-                   notebook validity, model-ladder protocol, readiness,
-                   live session/containment/change control, discovery laws,
-                   causal identification, clones
+                   notebook validity, readiness, live session/containment/
+                   change control, discovery laws, causal identification,
+                   clones
 examples/          quickstart, five executed notebooks (flywheel, discovery,
                    causal analysis) + causal_analysis.md
-experiments/       bench, drift, completeness, costs, audit, model_ladder
-                   + results JSON/CSV and curve PNGs
 ```
 
 ## 10. The second loop: `DiscoverySession`
@@ -805,3 +804,11 @@ over-adjustment contained, the paired mechanistic ATE with an exact placebo,
 bounded independence and a Berkson collider, and the audit stream as an
 interrupted time series. `tests/test_causal.py` also pins IV/Wald, DiD and RDD
 on declared synthetic SCMs.
+
+## License and contact
+
+**PolyForm Noncommercial License 1.0.0** — free for individual, academic, and
+other noncommercial research use. Commercial use requires a separate written
+license. See `LICENSE` for the full terms.
+
+Commercial licensing and contact: **reach@optimality.ai**

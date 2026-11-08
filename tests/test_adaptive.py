@@ -1,4 +1,4 @@
-"""ACI: coverage under drift, the beta_release G4 failure and its repair."""
+"""ACI: coverage under drift, the G4 failure and its repair."""
 import random
 
 import pytest

@@ -299,7 +299,7 @@ class DecisionModel:
         decision envelope for directional rules (deny vs release), not a joint
         1-alpha interval.
 
-        adaptive=True fits ACI (beta_release G4): the per-group risk level
+        adaptive=True fits ACI (the G4 result): the per-group risk level
         alpha_t moves from observed miscoverage, so `observe(row, y)` after a
         decision restores coverage under drift. gamma is the step size;
         window bounds the score memory."""
