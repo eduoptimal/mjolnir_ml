@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banking Code Certifiability — Action Report</title>
+<!--
+  bank_exec.html — MANAGEMENT ACTION REPORT (not the certificate). Plain business
+  language: what this is, what it means, whether it points to an error, what to do.
+  Self-contained (no CDN: opens offline on-prem). Regenerate via `rlvf bank-report`.
+  Placeholders: 2026-09-30 BANKING_SQL BANKING_SQL unknown b629a9ebe423115a9ece85d07e7b4479ab8f198a49e37a6d49ca86dc8d813628
+  44 20,676 2326 502
+  <tr class="finding" onclick="tog('ev_bound')"><td><strong>3 controls are proven by explicit binding</strong> from banking policy <em>not encoded in the code</em> — plus 1 declared contract(s) <span class='chev'>▸ click to inspect</span><div class='src'>declared contract — assumption, not a proof</div></td><td><div class='interp'><b>Interpretation — policy R-6</b>: Policy that is NOT encoded in the code: each bound control is proven on the named columns, conditional on its declared contract (assumption). It is evidence only as strong as that contract.</div></td><td><span class='sev ok'>Bound</span><div class='sub'>evidence: declared</div></td><td>Review the bindings; keep the premises enforced; retain as standing evidence.</td></tr><tr id="ev_bound" class="ev" style="display:none"><td colspan="4"><div class="evbox"><div class='evtitle'>Bound controls (rule @ target) <span class='sub'>(3 sites)</span></div><ul><li><code>TI_CASH_RECONCILIATION:</code> — ANIO == DIA  ·  rule V == V  ·  σ={&#x27;sum_debit&#x27;: &#x27;ANIO&#x27;, &#x27;sum_credit&#x27;: &#x27;DIA&#x27;}</li><li><code>TC_COMPANY:</code> — ANIO - DIA == 0  ·  rule V - V == N  ·  σ={&#x27;total_debit&#x27;: &#x27;ANIO&#x27;, &#x27;total_credit&#x27;: &#x27;DIA&#x27;}</li><li><code>TC_COMPANY:</code> — ANIO * 100 &gt;= 0  ·  rule V * N &gt;= N  ·  σ={&#x27;amount&#x27;: &#x27;ANIO&#x27;}</li></ul><div class='evtitle'>Declared contracts <span class='sub'>(1 site)</span></div><ul><li><code>TC_COMPANY:</code> — ANIO &gt;= 0  ·  rule V &gt;= N  ·  σ={&#x27;amount&#x27;: &#x27;ANIO&#x27;}</li></ul></div></td></tr> <div class='evtitle'>Ignored by policy</div><ul><li><code>.DS_Store</code></li><li><code>20260929/.DS_Store</code></li><li><code>20260929/EJECUTAR_SP_DIARIO_HH/.DS_Store</code></li></ul><div class='sub' style='margin-top:6px'>1 file(s) out of scope · 3 ignored · 0 suppressed</div>   scope: .mjolnirignore · dialect=snowflake · 3 ignored · 1 out-of-scope · 0 suppressed applied interpretations: report template (presentation, mockup)
+  transferred rules (typed transfer; vacuous tautologies filtered): <strong>1668</strong> informative certified fact(s) — e.g. <code>ANIO - DIA == 0</code>, <code>ANIO - LOAD_DATE == 0</code>; <strong>2442</strong> declared premise(s) over real columns (assumptions) — e.g. <code>ANIO &gt;= 0</code>, <code>DIA &gt;= 0</code> 1668 bound rules (explicit rule→symbol bindings): <strong>3</strong> bound control(s) proven — <code>ANIO == DIA</code> @ <code>TI_CASH_RECONCILIATION</code>, <code>ANIO - DIA == 0</code> @ <code>TC_COMPANY</code>; <strong>1</strong> bound contract(s) declared — <code>ANIO &gt;= 0</code> @ <code>TC_COMPANY</code> 3
+-->
+<style>
+  :root{--ink:#111827;--mut:#6b7280;--line:#e5e7eb;--ok:#047857;--warn:#b45309;--bad:#b91c1c;--brand:#1d4ed8;--bg:#f8fafc;}
+  *{box-sizing:border-box} body{margin:0;font:15.5px/1.55 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+  .wrap{max-width:920px;margin:0 auto;padding:30px 22px 44px}
+  h1{font-size:23px;margin:0 0 3px} h2{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);margin:26px 0 9px}
+  .sub{color:var(--mut);font-size:13px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px}
+  .kpi .n{font-size:26px;font-weight:700;line-height:1} .kpi .l{font-size:12px;color:var(--mut);margin-top:6px}
+  .n.ok{color:var(--ok)} .n.bad{color:var(--bad)} .n.warn{color:var(--warn)} .n.brand{color:var(--brand)}
+  table{width:100%;border-collapse:collapse;font-size:14.5px} th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
+  .sev{font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+  .sev.hi{background:#fef2f2;color:var(--bad)} .sev.md{background:#fffbeb;color:var(--warn)} .sev.ok{background:#ecfdf5;color:var(--ok)}
+  ol.actions{margin:6px 0 0 18px;padding:0} ol.actions li{margin:7px 0}
+  .cta{margin-top:26px;background:#0b1220;color:#fff;border-radius:12px;padding:20px 22px}
+  .cta h3{margin:0 0 8px;font-size:18px} .cta p{margin:6px 0;color:#cbd5e1}
+  .cta ul{color:#e2e8f0;margin:8px 0 4px 18px}
+  .btn{display:inline-block;margin-top:12px;background:#2563eb;color:#fff;text-decoration:none;padding:10px 18px;border-radius:8px;font-weight:600}
+  .foot{margin-top:20px;color:var(--mut);font-size:12px}
+  .why li{margin:5px 0}
+  .finding{cursor:pointer} .finding:hover{background:#f8fafc} .chev{color:var(--mut);font-size:12px}
+  .evbox{background:#f1f5f9;border-radius:8px;padding:10px 14px;font-size:13.5px}
+  .evbox ul{margin:2px 0 0 16px;padding:0} .evbox li{margin:3px 0}
+  .evbox code{color:#0f172a;background:#e2e8f0;padding:0 4px;border-radius:4px}
+  .evtitle{font-weight:700;margin-top:8px} .evtitle:first-child{margin-top:0}
+  .src{font-size:12px;color:var(--mut);margin-top:4px;font-style:italic}
+  .src.code{color:var(--ok)} .src.warn{color:var(--warn)}
+  .interp{font-size:13px;color:var(--mut)} .interp b{color:var(--ink);font-style:normal}
+  .interp.none{color:var(--mut);font-style:italic}
+  .scopebox{margin-top:12px;background:#f1f5f9;border-radius:8px;padding:12px 14px;font-size:13.5px}
+  .scopebox ul{margin:2px 0 0 16px;padding:0} .scopebox code{background:#e2e8f0;padding:0 4px;border-radius:4px}
+  @media(max-width:700px){.kpis{grid-template-columns:repeat(2,1fr)}}
+</style></head>
+<body><div class="wrap">
+
+<h1>Banking Code Certifiability — Action Report</h1>
+<div class="sub">Prepared for management · scope: <strong>RESULTADO.PRIVALBANK</strong> daily batch 44 files · 20,676 lines · 2026-09-30</div>
+
+<h2>What this is</h2>
+<div class="card">
+  <p style="margin:0">We read every procedure that runs your daily batch and, for each money-handling rule we
+  could <em>prove</em>, produced a machine-checked certificate. <strong>502 money rules are now proven</strong> and
+  <strong>none were approved incorrectly</strong>. The same pass catalogued <strong>2326 rules in total</strong> — the rest are
+  recorded as <em>declared</em> (enforced by the database), <em>abstained</em> (we would not guess), or flagged below.
+  Separately, <strong>1668 controls were proven by typed transfer</strong> from confirmed
+  financial rules (conditional on declared contracts, vacuously-true statements filtered) and
+  <strong>2442 column contracts were declared</strong>.</p>
+</div>
+
+<h2>Headline numbers</h2>
+<div class="kpis">
+  <div class="kpi"><div class="n ok">502</div><div class="l">money rules proven<br>by machine</div></div>
+  <div class="kpi"><div class="n ok">1668</div><div class="l">controls proven by<br>typed transfer</div></div>
+  <div class="kpi"><div class="n ok">3</div><div class="l">controls proven by<br>explicit binding</div></div>
+</div>
+
+<h2>What it means</h2>
+<div class="card">
+  <p style="margin:0">This is a <strong>report over your money-path claims</strong>. It answers one question a
+  board, an auditor, or a regulator will ask: <em>which money rules are guaranteed correct?</em> — the
+  502 certificates, each re-checkable offline. Policy rules that are not encoded in the code are
+  shown separately as <em>explicit bindings</em>; nothing is claimed beyond what the authority disposed.</p>
+</div>
+
+<h2>Findings</h2>
+<div class="card">
+  <p class="sub" style="margin:0 0 10px">Click any finding to expand the exact <code>file:line</code> and code excerpt needing intervention.</p>
+<table>
+  <tr><th>Finding</th><th>What it means (why you care)</th><th>Severity</th><th>Action</th></tr>
+  <tr class="finding" onclick="tog('ev_bound')"><td><strong>3 controls are proven by explicit binding</strong> from banking policy <em>not encoded in the code</em> — plus 1 declared contract(s) <span class='chev'>▸ click to inspect</span><div class='src'>declared contract — assumption, not a proof</div></td><td><div class='interp'><b>Interpretation — policy R-6</b>: Policy that is NOT encoded in the code: each bound control is proven on the named columns, conditional on its declared contract (assumption). It is evidence only as strong as that contract.</div></td><td><span class='sev ok'>Bound</span><div class='sub'>evidence: declared</div></td><td>Review the bindings; keep the premises enforced; retain as standing evidence.</td></tr><tr id="ev_bound" class="ev" style="display:none"><td colspan="4"><div class="evbox"><div class='evtitle'>Bound controls (rule @ target) <span class='sub'>(3 sites)</span></div><ul><li><code>TI_CASH_RECONCILIATION:</code> — ANIO == DIA  ·  rule V == V  ·  σ={&#x27;sum_debit&#x27;: &#x27;ANIO&#x27;, &#x27;sum_credit&#x27;: &#x27;DIA&#x27;}</li><li><code>TC_COMPANY:</code> — ANIO - DIA == 0  ·  rule V - V == N  ·  σ={&#x27;total_debit&#x27;: &#x27;ANIO&#x27;, &#x27;total_credit&#x27;: &#x27;DIA&#x27;}</li><li><code>TC_COMPANY:</code> — ANIO * 100 &gt;= 0  ·  rule V * N &gt;= N  ·  σ={&#x27;amount&#x27;: &#x27;ANIO&#x27;}</li></ul><div class='evtitle'>Declared contracts <span class='sub'>(1 site)</span></div><ul><li><code>TC_COMPANY:</code> — ANIO &gt;= 0  ·  rule V &gt;= N  ·  σ={&#x27;amount&#x27;: &#x27;ANIO&#x27;}</li></ul></div></td></tr>
+</table>
+<div class="scopebox"><div class="evtitle">Scope — what was examined, ignored, or suppressed</div><div class='evtitle'>Ignored by policy</div><ul><li><code>.DS_Store</code></li><li><code>20260929/.DS_Store</code></li><li><code>20260929/EJECUTAR_SP_DIARIO_HH/.DS_Store</code></li></ul><div class='sub' style='margin-top:6px'>1 file(s) out of scope · 3 ignored · 0 suppressed</div><div class="sub" style="margin-top:8px">  scope: .mjolnirignore · dialect=snowflake · 3 ignored · 1 out-of-scope · 0 suppressed applied</div>
+    <div class="sub" style="margin-top:2px">interpretations: report template (presentation, mockup)</div>
+    <div class="sub" style="margin-top:2px">transferred rules (typed transfer; vacuous tautologies filtered): <strong>1668</strong> informative certified fact(s) — e.g. <code>ANIO - DIA == 0</code>, <code>ANIO - LOAD_DATE == 0</code>; <strong>2442</strong> declared premise(s) over real columns (assumptions) — e.g. <code>ANIO &gt;= 0</code>, <code>DIA &gt;= 0</code></div>
+    <div class="sub" style="margin-top:2px">bound rules (explicit rule→symbol bindings): <strong>3</strong> bound control(s) proven — <code>ANIO == DIA</code> @ <code>TI_CASH_RECONCILIATION</code>, <code>ANIO - DIA == 0</code> @ <code>TC_COMPANY</code>; <strong>1</strong> bound contract(s) declared — <code>ANIO &gt;= 0</code> @ <code>TC_COMPANY</code></div></div>
+
+<h2>What was not proven — segmentation</h2>
+<div class="card">
+  <p class="sub" style="margin:0 0 10px">Total mined 2326 · proven 502 ·
+  not proven 1824 = <strong>1824</strong> declared (DB-enforced / no
+  provable spec) + <strong>0</strong> abstained (out of fragment) +
+  <strong>0</strong> refuted.</p>
+  <table>
+    <tr><th>Class</th><th>Disposition</th><th class="text-right">Count</th></tr>
+    <tr><td>Schema/column contract — DB-enforced</td><td class='note'>declared (no provable spec)</td><td class='text-right'>1,660</td></tr><tr><td>Cast monitor — no exactness spec as written</td><td class='note'>declared (no provable spec)</td><td class='text-right'>164</td></tr>
+  </table>
+</div>
+<p class="sub" style="margin:12px 0 0">No exposures detected in this pass.</p>
+</div>
+
+<h2>What it solves (concretely)</h2>
+<div class="card"><ul class="why">
+  <li><strong>Evidence for audit and regulation:</strong> a re-checkable certificate per money rule — anyone can verify it, forever, offline.</li>
+  <li><strong>Safer releases:</strong> a money rule is either <em>certified</em> (proof attached) or <em>declared</em> — the ambiguity is removed, not guessed.</li>
+  <li><strong>Protects the numbers:</strong> where the arithmetic is in fragment, decimal/scale exactness is <em>proven</em>; elsewhere it abstains instead of assuming.</li>
+  <li><strong>Readies you for AI-written code:</strong> when code is generated or edited by AI, it can be required to produce these certificated rules or explicitly decline — a fail-closed control.</li>
+</ul></div>
+
+<h2>What we did not claim</h2>
+<ul>
+  <li>Not a certificate of every line — only the rules we can prove, with the rest honestly labelled.</li>
+  <li>No source leaves your environment; the report carries counts, shapes and provenance only.</li>
+  <li>Every verdict is bound to a pinned authority (fingerprint below) and is re-checkable by anyone.</li>
+</ul>
+
+<div class="cta">
+  <h3>Decision requested</h3>
+  <ul>
+    <li><strong>Approve Phase 3</strong> — a model post-trained on your own procedures that emits certified money logic or declines, delivered with a before/after ledger.</li>
+    <li><strong>Schedule a 1-hour review</strong> with the engineering owner to review the evidence above.</li>
+  </ul>
+  <p>Deliverable: measured growth in proven money rules on <em>your</em> estate, and a reconciled figure no reviewer has to take on faith.</p>
+  <a class="btn" href="mailto:?subject=Approve%20Phase%202%20—%20NULL/3VL%20rung%20%2B%20reconciliation%20certification">Approve Phase 2 →</a>
+</div>
+
+<div class="foot">
+  Provenance — authority <code>b629a9ebe423115a9ece85d07e7b4479ab8f198a49e37a6d49ca86dc8d813628</code> · corpus <code>BANKING_SQL@unknown</code> · read-only · runs on-prem, offline.
+</div>
+</div><script>function tog(id){var e=document.getElementById(id);if(e){e.style.display=(e.style.display==="none")?"table-row":"none";}}</script>
+<!-- Report-side presentation: how each finding is WORDED and rated. This is part of
+     the report asset (a mockup), not engine logic and not a corpus config. -->
+<script id="policy" type="application/json">
+{
+  "bound": {"rule":"R-6","severity":"ok",
+    "interpretation":"Policy that is NOT encoded in the code: each bound control is proven on the named columns, conditional on its declared contract (assumption). It is evidence only as strong as that contract.",
+    "action":"Review the bindings; keep the premises enforced; retain as standing evidence."}
+}
+</script>
+</body></html>

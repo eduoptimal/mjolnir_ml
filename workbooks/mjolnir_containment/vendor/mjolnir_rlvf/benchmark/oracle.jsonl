@@ -1,0 +1,184 @@
+{"id": "A-lin-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_0(n):\n    result = 2 * n + 0\n    assert result == 2 * n + 0\n"}
+{"id": "A-lin-001", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_1(n):\n    result = 3 * n + 1\n    assert result == 3 * n + 1\n"}
+{"id": "A-lin-002", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_2(n):\n    result = 5 * n - 3\n    assert result == 5 * n - 3\n"}
+{"id": "A-lin-003", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_3(n):\n    result = 7 * n + 4\n    assert result == 7 * n + 4\n"}
+{"id": "A-lin-004", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_4(n):\n    result = 4 * n - 6\n    assert result == 4 * n - 6\n"}
+{"id": "A-lin-005", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_5(n):\n    result = 9 * n + 2\n    assert result == 9 * n + 2\n"}
+{"id": "A-lin-006", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_6(n):\n    result = 6 * n + 5\n    assert result == 6 * n + 5\n"}
+{"id": "A-lin-007", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_7(n):\n    result = 8 * n - 1\n    assert result == 8 * n - 1\n"}
+{"id": "A-lin-008", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_8(n):\n    result = 1 * n + 9\n    assert result == 1 * n + 9\n"}
+{"id": "A-lin-009", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_9(n):\n    result = 10 * n - 4\n    assert result == 10 * n - 4\n"}
+{"id": "A-lin-010", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_10(n):\n    result = 12 * n + 0\n    assert result == 12 * n + 0\n"}
+{"id": "A-lin-011", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_11(n):\n    result = 11 * n + 3\n    assert result == 11 * n + 3\n"}
+{"id": "A-lin-012", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_12(n):\n    result = 13 * n - 7\n    assert result == 13 * n - 7\n"}
+{"id": "A-lin-013", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_13(n):\n    result = 15 * n + 6\n    assert result == 15 * n + 6\n"}
+{"id": "A-lin-014", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_14(n):\n    result = 14 * n + 2\n    assert result == 14 * n + 2\n"}
+{"id": "A-lin-015", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_15(n):\n    result = 16 * n - 5\n    assert result == 16 * n - 5\n"}
+{"id": "A-lin-016", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_16(n):\n    result = 17 * n + 8\n    assert result == 17 * n + 8\n"}
+{"id": "A-lin-017", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_17(n):\n    result = 18 * n - 9\n    assert result == 18 * n - 9\n"}
+{"id": "A-lin-018", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_18(n):\n    result = 19 * n + 1\n    assert result == 19 * n + 1\n"}
+{"id": "A-lin-019", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def lin_19(n):\n    result = 20 * n + 7\n    assert result == 20 * n + 7\n"}
+{"id": "A-quad-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def quad_0(n):\n    result = n * n + 2 * n + 1\n    assert result == (n + 1) * (n + 1)\n"}
+{"id": "A-quad-001", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def quad_1(n):\n    result = n * n + 4 * n + 4\n    assert result == (n + 2) * (n + 2)\n"}
+{"id": "A-quad-002", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def quad_2(n):\n    result = n * n + 6 * n + 9\n    assert result == (n + 3) * (n + 3)\n"}
+{"id": "A-quad-003", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def quad_3(n):\n    result = n * n + 10 * n + 25\n    assert result == (n + 5) * (n + 5)\n"}
+{"id": "A-quad-004", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def quad_4(n):\n    result = n * n + 14 * n + 49\n    assert result == (n + 7) * (n + 7)\n"}
+{"id": "A-quad-005", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def quad_5(n):\n    result = n * n + 8 * n + 16\n    assert result == (n + 4) * (n + 4)\n"}
+{"id": "A-quad-006", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def quad_6(n):\n    result = n * n + 12 * n + 36\n    assert result == (n + 6) * (n + 6)\n"}
+{"id": "A-quad-007", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def quad_7(n):\n    result = n * n + 16 * n + 64\n    assert result == (n + 8) * (n + 8)\n"}
+{"id": "A-quad-008", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def quad_8(n):\n    result = n * n + 18 * n + 81\n    assert result == (n + 9) * (n + 9)\n"}
+{"id": "A-quad-009", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def quad_9(n):\n    result = n * n + 22 * n + 121\n    assert result == (n + 11) * (n + 11)\n"}
+{"id": "A-quad-010", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def quad_10(n):\n    result = n * n + 20 * n + 100\n    assert result == (n + 10) * (n + 10)\n"}
+{"id": "A-quad-011", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def quad_11(n):\n    result = n * n + 24 * n + 144\n    assert result == (n + 12) * (n + 12)\n"}
+{"id": "A-sqsum-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sqsum_0(a, b):\n    result = a * a + 2 * a * b + b * b\n    assert result == (a + b) * (a + b)\n"}
+{"id": "A-sqsum-001", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sqsum_1(a, b):\n    result = a * a + 2 * a * b + b * b\n    assert result == (a + b) * (a + b)\n"}
+{"id": "A-sqsum-002", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sqsum_2(a, b):\n    result = a * a + 2 * a * b + b * b\n    assert result == (a + b) * (a + b)\n"}
+{"id": "A-sqsum-003", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sqsum_3(a, b):\n    result = a * a + 2 * a * b + b * b\n    assert result == (a + b) * (a + b)\n"}
+{"id": "A-sqsum-004", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sqsum_4(a, b):\n    result = a * a + 2 * a * b + b * b\n    assert result == (a + b) * (a + b)\n"}
+{"id": "A-sqsum-005", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sqsum_5(a, b):\n    result = a * a + 2 * a * b + b * b\n    assert result == (a + b) * (a + b)\n"}
+{"id": "A-sqsum-006", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sqsum_6(a, b):\n    result = a * a + 2 * a * b + b * b\n    assert result == (a + b) * (a + b)\n"}
+{"id": "A-sqsum-007", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sqsum_7(a, b):\n    result = a * a + 2 * a * b + b * b\n    assert result == (a + b) * (a + b)\n"}
+{"id": "A-cancel-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def cancel(x, y):\n    result = x + y - y\n    assert result == x\n"}
+{"id": "A-diffsq-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def diff_sq(a, b):\n    result = a * a - b * b\n    assert result == (a + b) * (a - b)\n"}
+{"id": "A-distribute-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def distribute(a, b, c):\n    result = a * (b + c)\n    assert result == a * b + a * c\n"}
+{"id": "A-triple-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def triple_product(a, b, c):\n    result = a * b * c\n    assert result == a * b * c\n"}
+{"id": "A-loopconst-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_const_0(n):\n    result = 0\n    for i in range(n):\n        result += 2\n    assert result == 2 * n\n"}
+{"id": "A-loopconst-001", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_const_1(n):\n    result = 0\n    for i in range(n):\n        result += 3\n    assert result == 3 * n\n"}
+{"id": "A-loopconst-002", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_const_2(n):\n    result = 0\n    for i in range(n):\n        result += 5\n    assert result == 5 * n\n"}
+{"id": "A-loopconst-003", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_const_3(n):\n    result = 0\n    for i in range(n):\n        result += 7\n    assert result == 7 * n\n"}
+{"id": "A-loopconst-004", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_const_4(n):\n    result = 0\n    for i in range(n):\n        result += 10\n    assert result == 10 * n\n"}
+{"id": "A-loopconst-005", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_const_5(n):\n    result = 0\n    for i in range(n):\n        result += 4\n    assert result == 4 * n\n"}
+{"id": "A-loopconst-006", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_const_6(n):\n    result = 0\n    for i in range(n):\n        result += 6\n    assert result == 6 * n\n"}
+{"id": "A-loopconst-007", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_const_7(n):\n    result = 0\n    for i in range(n):\n        result += 9\n    assert result == 9 * n\n"}
+{"id": "A-loopconst-008", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_const_8(n):\n    result = 0\n    for i in range(n):\n        result += 8\n    assert result == 8 * n\n"}
+{"id": "A-loopconst-009", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_const_9(n):\n    result = 0\n    for i in range(n):\n        result += 11\n    assert result == 11 * n\n"}
+{"id": "A-loopconst-010", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_const_10(n):\n    result = 0\n    for i in range(n):\n        result += 12\n    assert result == 12 * n\n"}
+{"id": "A-loopconst-011", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_const_11(n):\n    result = 0\n    for i in range(n):\n        result += 15\n    assert result == 15 * n\n"}
+{"id": "A-looplin-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_lin_0(n):\n    result = 0\n    for i in range(n):\n        result += 1 * i + 0\n    assert result == 1 * (n * (n - 1) // 2) + 0 * n\n"}
+{"id": "A-looplin-001", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_lin_1(n):\n    result = 0\n    for i in range(n):\n        result += 3 * i + 1\n    assert result == 3 * (n * (n - 1) // 2) + 1 * n\n"}
+{"id": "A-looplin-002", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_lin_2(n):\n    result = 0\n    for i in range(n):\n        result += 2 * i + 5\n    assert result == 2 * (n * (n - 1) // 2) + 5 * n\n"}
+{"id": "A-looplin-003", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_lin_3(n):\n    result = 0\n    for i in range(n):\n        result += 4 * i + 3\n    assert result == 4 * (n * (n - 1) // 2) + 3 * n\n"}
+{"id": "A-looplin-004", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_lin_4(n):\n    result = 0\n    for i in range(n):\n        result += 5 * i + 2\n    assert result == 5 * (n * (n - 1) // 2) + 2 * n\n"}
+{"id": "A-looplin-005", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_lin_5(n):\n    result = 0\n    for i in range(n):\n        result += 6 * i + 4\n    assert result == 6 * (n * (n - 1) // 2) + 4 * n\n"}
+{"id": "A-looplin-006", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_lin_6(n):\n    result = 0\n    for i in range(n):\n        result += 2 * i - 1\n    assert result == 2 * (n * (n - 1) // 2) + -1 * n\n"}
+{"id": "A-looplin-007", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_lin_7(n):\n    result = 0\n    for i in range(n):\n        result += 3 * i + 7\n    assert result == 3 * (n * (n - 1) // 2) + 7 * n\n"}
+{"id": "A-looplin-008", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_lin_8(n):\n    result = 0\n    for i in range(n):\n        result += 5 * i - 2\n    assert result == 5 * (n * (n - 1) // 2) + -2 * n\n"}
+{"id": "A-looplin-009", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_lin_9(n):\n    result = 0\n    for i in range(n):\n        result += 4 * i + 9\n    assert result == 4 * (n * (n - 1) // 2) + 9 * n\n"}
+{"id": "A-loopsq-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_sq(n):\n    result = 0\n    for i in range(n):\n        result += i * i\n    assert result == n * (n - 1) * (2 * n - 1) // 6\n"}
+{"id": "A-looptwo-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def loop_two_acc(n):\n    result = 0\n    count = 0\n    for i in range(n):\n        result += i\n        count += 1\n    assert result == n * (n - 1) // 2\n"}
+{"id": "A-premnonneg-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_nonneg_0(n):\n    assert n >= 0\n    result = n + 1\n    assert result >= 1\n"}
+{"id": "A-premnonneg-001", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_nonneg_1(n):\n    assert n >= 1\n    result = n + 2\n    assert result >= 3\n"}
+{"id": "A-premnonneg-002", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_nonneg_2(n):\n    assert n >= 0\n    result = n + 5\n    assert result >= 5\n"}
+{"id": "A-premnonneg-003", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_nonneg_3(n):\n    assert n >= 2\n    result = n + 3\n    assert result >= 5\n"}
+{"id": "A-premnonneg-004", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_nonneg_4(n):\n    assert n >= 3\n    result = n + 1\n    assert result >= 4\n"}
+{"id": "A-premnonneg-005", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_nonneg_5(n):\n    assert n >= 1\n    result = n + 7\n    assert result >= 8\n"}
+{"id": "A-premnonneg-006", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_nonneg_6(n):\n    assert n >= 4\n    result = n + 2\n    assert result >= 6\n"}
+{"id": "A-premnonneg-007", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_nonneg_7(n):\n    assert n >= 0\n    result = n + 9\n    assert result >= 9\n"}
+{"id": "A-premnonneg-008", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_nonneg_8(n):\n    assert n >= 5\n    result = n + 5\n    assert result >= 10\n"}
+{"id": "A-premnonneg-009", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_nonneg_9(n):\n    assert n >= 2\n    result = n + 8\n    assert result >= 10\n"}
+{"id": "A-premguard-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_guard_0(n):\n    if n < 0:\n        raise ValueError\n    result = 2 * n\n    assert result >= 0\n"}
+{"id": "A-premguard-001", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_guard_1(n):\n    if n < 0:\n        raise ValueError\n    result = 3 * n\n    assert result >= 0\n"}
+{"id": "A-premguard-002", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_guard_2(n):\n    if n < 0:\n        raise ValueError\n    result = 5 * n\n    assert result >= 0\n"}
+{"id": "A-premguard-003", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_guard_3(n):\n    if n < 0:\n        raise ValueError\n    result = 4 * n\n    assert result >= 0\n"}
+{"id": "A-premguard-004", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_guard_4(n):\n    if n < 0:\n        raise ValueError\n    result = 6 * n\n    assert result >= 0\n"}
+{"id": "A-premguard-005", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def prem_guard_5(n):\n    if n < 0:\n        raise ValueError\n    result = 7 * n\n    assert result >= 0\n"}
+{"id": "A-boundge-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_ge_0(x):\n    assert x >= 1\n    result = x + 1\n    assert result >= 2\n"}
+{"id": "A-boundge-001", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_ge_1(x):\n    assert x >= 5\n    result = x + 2\n    assert result >= 7\n"}
+{"id": "A-boundge-002", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_ge_2(x):\n    assert x >= 0\n    result = x + 3\n    assert result >= 3\n"}
+{"id": "A-boundge-003", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_ge_3(x):\n    assert x >= 10\n    result = x + 4\n    assert result >= 14\n"}
+{"id": "A-boundge-004", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_ge_4(x):\n    assert x >= 2\n    result = x + 8\n    assert result >= 10\n"}
+{"id": "A-boundge-005", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_ge_5(x):\n    assert x >= 7\n    result = x + 5\n    assert result >= 12\n"}
+{"id": "A-boundge-006", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_ge_6(x):\n    assert x >= 3\n    result = x + 3\n    assert result >= 6\n"}
+{"id": "A-boundge-007", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_ge_7(x):\n    assert x >= 4\n    result = x + 6\n    assert result >= 10\n"}
+{"id": "A-boundle-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_le_0(x):\n    assert x >= 0\n    assert x <= 10\n    result = x - 5\n    assert result <= 5\n"}
+{"id": "A-boundle-001", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_le_1(x):\n    assert x >= 0\n    assert x <= 20\n    result = x - 7\n    assert result <= 13\n"}
+{"id": "A-boundle-002", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_le_2(x):\n    assert x >= 0\n    assert x <= 100\n    result = x - 1\n    assert result <= 99\n"}
+{"id": "A-boundle-003", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_le_3(x):\n    assert x >= 0\n    assert x <= 50\n    result = x - 25\n    assert result <= 25\n"}
+{"id": "A-boundle-004", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_le_4(x):\n    assert x >= 0\n    assert x <= 8\n    result = x - 3\n    assert result <= 5\n"}
+{"id": "A-boundle-005", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_le_5(x):\n    assert x >= 0\n    assert x <= 30\n    result = x - 10\n    assert result <= 20\n"}
+{"id": "A-boundle-006", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_le_6(x):\n    assert x >= 0\n    assert x <= 15\n    result = x - 4\n    assert result <= 11\n"}
+{"id": "A-boundle-007", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def bound_le_7(x):\n    assert x >= 0\n    assert x <= 12\n    result = x - 6\n    assert result <= 6\n"}
+{"id": "A-system-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sys_0(a, b):\n    assert a + b == 10\n    assert a - b == 2\n    assert a == 6\n"}
+{"id": "A-system-001", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sys_1(a, b):\n    assert a + b == 12\n    assert a - b == 4\n    assert a == 8\n"}
+{"id": "A-system-002", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sys_2(a, b):\n    assert a + b == 8\n    assert a - b == 0\n    assert a == 4\n"}
+{"id": "A-system-003", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sys_3(a, b):\n    assert a + b == 14\n    assert a - b == 6\n    assert a == 10\n"}
+{"id": "A-system-004", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sys_4(a, b):\n    assert a + b == 9\n    assert a - b == 3\n    assert a == 6\n"}
+{"id": "A-system-005", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sys_5(a, b):\n    assert a + b == 20\n    assert a - b == 10\n    assert a == 15\n"}
+{"id": "A-system-006", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sys_6(a, b):\n    assert a + b == 16\n    assert a - b == 8\n    assert a == 12\n"}
+{"id": "A-system-007", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sys_7(a, b):\n    assert a + b == 11\n    assert a - b == 5\n    assert a == 8\n"}
+{"id": "A-system-008", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sys_8(a, b):\n    assert a + b == 18\n    assert a - b == 2\n    assert a == 10\n"}
+{"id": "A-system-009", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def sys_9(a, b):\n    assert a + b == 24\n    assert a - b == 4\n    assert a == 14\n"}
+{"id": "A-comboloop-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def combo_loop_prem(n):\n    assert n >= 0\n    result = 0\n    for i in range(n):\n        result += i\n    assert result == n * (n - 1) // 2\n"}
+{"id": "A-combobound-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def combo_bound_0(n):\n    assert n <= 50\n    result = 0\n    for i in range(n):\n        result += 1\n    assert result <= 50\n"}
+{"id": "A-combobound-001", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def combo_bound_1(n):\n    assert n <= 100\n    result = 0\n    for i in range(n):\n        result += 1\n    assert result <= 100\n"}
+{"id": "A-combobound-002", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def combo_bound_2(n):\n    assert n <= 10\n    result = 0\n    for i in range(n):\n        result += 1\n    assert result <= 10\n"}
+{"id": "A-combobound-003", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def combo_bound_3(n):\n    assert n <= 200\n    result = 0\n    for i in range(n):\n        result += 1\n    assert result <= 200\n"}
+{"id": "A-combobound-004", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def combo_bound_4(n):\n    assert n <= 25\n    result = 0\n    for i in range(n):\n        result += 1\n    assert result <= 25\n"}
+{"id": "A-combobound-005", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def combo_bound_5(n):\n    assert n <= 75\n    result = 0\n    for i in range(n):\n        result += 1\n    assert result <= 75\n"}
+{"id": "A-combobound-006", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def combo_bound_6(n):\n    assert n <= 40\n    result = 0\n    for i in range(n):\n        result += 1\n    assert result <= 40\n"}
+{"id": "A-combobound-007", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def combo_bound_7(n):\n    assert n <= 150\n    result = 0\n    for i in range(n):\n        result += 1\n    assert result <= 150\n"}
+{"id": "C-mut_sort-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def sorted_bounds(xs):\n    assert xs[0] <= xs[-1]\n"}
+{"id": "C-mut_append-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def push_and_last(q, x):\n    assert result == x\n"}
+{"id": "C-mut_pop-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def pop_and_len(q):\n    assert result == 1\n"}
+{"id": "C-sub_tuple-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def first_is_one(t):\n    assert t[0] == 1\n"}
+{"id": "C-sub_tuple2-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def third_is_one(t):\n    assert t[2] == 1\n"}
+{"id": "C-sub_dict-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def is_ok(payload):\n    assert payload['ok'] == True\n"}
+{"id": "C-sub_dict2-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def is_value(payload):\n    assert payload['value'] == True\n"}
+{"id": "C-meth_strip-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def stripped_len(s):\n    assert result == len(s.strip())\n"}
+{"id": "C-meth_digit-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def is_digits(s):\n    assert s.isdigit()\n"}
+{"id": "C-meth_lower-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def lower_len(s):\n    assert result == len(s.lower())\n"}
+{"id": "C-membership-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def in_list(x, xs):\n    assert x in xs\n"}
+{"id": "C-membership2-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def in_nested(xs, ys):\n    assert xs[0] in ys\n"}
+{"id": "C-identity-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def same_object(a, b):\n    assert a is b\n"}
+{"id": "C-identity2-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def not_same_object(a, b):\n    assert a is not b\n"}
+{"id": "C-typecheck-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def is_int(x):\n    assert isinstance(x, int)\n"}
+{"id": "C-typecheck2-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def is_float(x):\n    assert isinstance(x, float)\n"}
+{"id": "C-bool_and-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def both_positive(a, b):\n    assert (a > 0) and (b > 0)\n"}
+{"id": "C-bool_or-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def any_positive(a, b):\n    assert (a > 0) or (b > 0)\n"}
+{"id": "C-bool_not-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def distinct(a, b):\n    assert not (a == b)\n"}
+{"id": "C-slice_eq-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def tail_equals(xs, ys):\n    assert xs[1:] == ys\n"}
+{"id": "C-slice_prefix-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def head_equals(xs, ys):\n    assert xs[:1] == ys\n"}
+{"id": "C-call_unknown-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def apply_fn(g, x):\n    assert result == g(x)\n"}
+{"id": "C-call_method-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def apply_method(obj):\n    assert result == obj.run() + 1\n"}
+{"id": "C-exception-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def safe_div(n):\n    assert result >= 0\n"}
+{"id": "C-exception2-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def safe_index(xs, i):\n    assert result == 0\n"}
+{"id": "C-while_loop-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def count_up(n):\n    assert result >= 0\n"}
+{"id": "C-while_loop2-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def count_to_n(n):\n    assert result >= n\n"}
+{"id": "C-operator_union-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def union_size(a, b):\n    assert len(a | b) >= 0\n"}
+{"id": "C-operator_inter-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def inter_size(a, b):\n    assert len(a & b) >= 0\n"}
+{"id": "C-attribute-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def total_nonneg(order):\n    assert result >= 0\n"}
+{"id": "C-nm_digits-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def nm_digits(x):\n    result = len(str(x))\n    assert result <= 10\n"}
+{"id": "C-nm_div0-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def nm_div0(x, d):\n    try:\n        result = x // d\n    except ZeroDivisionError:\n        result = 0\n    assert result >= 0\n"}
+{"id": "C-nm_push-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def nm_push(ledger, x):\n    ledger.append(x)\n    result = ledger[-1]\n    assert result == x\n"}
+{"id": "C-nm_total-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def nm_total(order):\n    result = order.total\n    assert result <= 100\n"}
+{"id": "C-nm_count-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def nm_count(n):\n    result = 0\n    while result < n:\n        result += 1\n    assert result >= 0\n"}
+{"id": "C-nm_read-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def nm_read(payload):\n    result = payload['n'] * 2\n    assert result % 2 == 0\n"}
+{"id": "C-nm_lookup-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def nm_lookup(table, k):\n    result = table[k]\n    assert result >= 0\n"}
+{"id": "C-gap_add-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def pg_add(n):\n    assert n >= 0\n    result = n + 1\n    assert result >= 3\n"}
+{"id": "C-gap_bound-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def pg_bound(x):\n    assert x >= 0\n    result = x - 5\n    assert result >= -3\n"}
+{"id": "C-gap_scale-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def pg_scale(n):\n    assert n >= 0\n    result = 2 * n\n    assert result >= 10\n"}
+{"id": "C-gap_add2-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def pg_add2(n):\n    assert n >= 0\n    result = n + 3\n    assert result >= 10\n"}
+{"id": "C-gap_scale2-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def pg_scale2(x):\n    assert x >= 0\n    result = 4 * x\n    assert result >= 20\n"}
+{"id": "C-gap_diff-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def pg_diff(x):\n    assert x >= 0\n    result = x - 2\n    assert result >= 3\n"}
+{"id": "C-gap_two-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def pg_two(a, b):\n    assert a >= 0\n    result = a + b\n    assert result >= 10\n"}
+{"id": "C-gap_strict-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def pg_strict(n):\n    assert n >= 0\n    result = 2 * n\n    assert result >= 6\n"}
+{"id": "A-guarddisc-000", "observed_status": "CERTIFIED", "oracle": "decidable", "reference": "def nm_guard(x):\n    if x < 1:\n        raise ValueError\n    result = x + 1\n    assert result >= 2\n"}
+{"id": "C-npmin0-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_min_0(x):\n    result = min(x, 3)\n    assert result <= 3 and result <= x\n"}
+{"id": "C-npmin1-001", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_min_1(x):\n    result = min(x, 5)\n    assert result <= 5 and result <= x\n"}
+{"id": "C-npmin2-002", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_min_2(x):\n    result = min(x, 7)\n    assert result <= 7 and result <= x\n"}
+{"id": "C-npmin3-003", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_min_3(x):\n    result = min(x, 9)\n    assert result <= 9 and result <= x\n"}
+{"id": "C-npmin4-004", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_min_4(x):\n    result = min(x, 11)\n    assert result <= 11 and result <= x\n"}
+{"id": "C-npmin5-005", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_min_5(x):\n    result = min(x, 13)\n    assert result <= 13 and result <= x\n"}
+{"id": "C-npmin2_0-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_min2_0(x, y):\n    assert x >= 2\n    result = min(x, y)\n    assert result <= 5\n"}
+{"id": "C-npmin2_1-001", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_min2_1(x, y):\n    assert x >= 3\n    result = min(x, y)\n    assert result <= 7\n"}
+{"id": "C-npmin2_2-002", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_min2_2(x, y):\n    assert x >= 4\n    result = min(x, y)\n    assert result <= 9\n"}
+{"id": "C-npabs0-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_abs_0(x):\n    result = abs(x)\n    assert result >= 0\n"}
+{"id": "C-npabs1-001", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_abs_1(x):\n    result = abs(x)\n    assert result >= 0\n"}
+{"id": "C-npabs2-002", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_abs_2(x):\n    result = abs(x)\n    assert result >= 0\n"}
+{"id": "C-npmod0-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_mod_0(n):\n    result = n % 4\n    assert result < 4\n"}
+{"id": "C-npmod1-001", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_mod_1(n):\n    result = n % 7\n    assert result < 7\n"}
+{"id": "C-npmod2-002", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_mod_2(n):\n    result = n % 9\n    assert result < 9\n"}
+{"id": "C-npmod3-003", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_mod_3(n):\n    result = n % 10\n    assert result < 10\n"}
+{"id": "C-npmod4-004", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_mod_4(n):\n    result = n % 8\n    assert result < 8\n"}
+{"id": "C-npmax0-000", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_max_0(x):\n    result = max(x, 6)\n    assert result >= 6 or result >= x\n"}
+{"id": "C-npmax1-001", "observed_status": "UNVERIFIABLE", "oracle": "undecidable", "reference": "def np_max_1(x):\n    result = max(x, 11)\n    assert result >= 11 or result >= x\n"}

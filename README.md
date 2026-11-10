@@ -16,6 +16,15 @@ This repository accompanies:
 * **Certified Ignorance: The Machine That Knows What It Cannot Know** —
   Eduardo Perez Denadai
 
+The *Safe Artificial Intelligence Systems* series ships one lab workbook per
+volume, all pinned to this repository's engine:
+
+| Volume | Workbook |
+|---|---|
+| I — *Fail-Closed Machine Learning* | [`workbooks/mjolnir_contract`](workbooks/mjolnir_contract) |
+| II — *Non-Stationary Machine Learning* | [`workbooks/mjolnir_governance`](workbooks/mjolnir_governance) |
+| III — *Agentic Machine Learning* | [`workbooks/mjolnir_containment`](workbooks/mjolnir_containment) |
+
 ```python
 @dsl
 class MammographyPolicy(DecisionPolicyBase):

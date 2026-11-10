@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mjolnir-containment-workbook"
+version = "0.1.0"
+description = "Volume III containment workbook: facade, labs, and vendored containment libraries."
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.setuptools]
+package-dir = {"" = "vendor"}
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["vendor"]

@@ -1,0 +1,42 @@
+{
+  "title": "Verified premises: alfresco-vendor-contracts expiry-window validation",
+  "code_excerpt_from": "ExpiringContractsWebScript.java",
+  "claims": [
+    {
+      "claim": "assert days >= 0",
+      "file": "src/main/java/org/alfresco/vendorcontracts/webscript/ExpiringContractsWebScript.java",
+      "line": 59,
+      "symbol": "executeImpl"
+    },
+    {
+      "claim": "assert days > 0",
+      "file": "src/main/java/org/alfresco/vendorcontracts/webscript/ExpiringContractsWebScript.java",
+      "line": 88,
+      "symbol": "parseDays"
+    }
+  ],
+  "steps": [
+    {
+      "step": "premise",
+      "kind": "premise",
+      "rule": "premise",
+      "claim": "assert days >= 0",
+      "file": "src/main/java/org/alfresco/vendorcontracts/webscript/ExpiringContractsWebScript.java",
+      "line": 59,
+      "reads": "days >= 0",
+      "concludes": "verified \u2014 enforced at runtime by the library's own guard",
+      "plain": "The library's own guard clause declares this input guarantee \u2014 and enforces it at runtime (rejects invalid values with HTTP 400)."
+    },
+    {
+      "step": "premise",
+      "kind": "premise",
+      "rule": "premise",
+      "claim": "assert days > 0",
+      "file": "src/main/java/org/alfresco/vendorcontracts/webscript/ExpiringContractsWebScript.java",
+      "line": 88,
+      "reads": "days > 0",
+      "concludes": "verified \u2014 enforced at runtime by the library's own guard",
+      "plain": "The library's own guard clause declares this input guarantee \u2014 and enforces it at runtime (rejects invalid values with HTTP 400)."
+    }
+  ]
+}

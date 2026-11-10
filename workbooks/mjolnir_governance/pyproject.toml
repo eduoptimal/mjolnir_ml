@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mjolnir-governance-workbook"
+version = "0.1.0"
+description = "Volume II governance workbook: ten lab drivers over the mjolnir_ml engine."
+requires-python = ">=3.10"
+dependencies = []
+
+# The workbook is a lab distribution, not an importable package. The engine is
+# the only Python package the reader installs (`pip install mjolnir-ml`).
+[tool.setuptools]
+packages = []

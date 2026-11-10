@@ -1,0 +1,29 @@
+# mjolnir CI — fail-closed gate template (S3).
+# Copy to .github/workflows/mjolnir.yml and set `paths` to your code roots.
+name: mjolnir
+
+on: [push, pull_request]
+
+jobs:
+  certify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Fail-closed: the build fails on a refutation/fault, and (per config)
+      # on an abstention where verification was required.
+      - name: mjolnir gate
+        run: |
+          mjolnir prover check --gate --config mjolnir.toml \
+            src mjolnir/lib --json out/certificates.json
+
+      # Certificates are the artifact — attach them even when the gate fails,
+      # so reviewers get the witness and the abstain taxonomy.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mjolnir-certificates
+          path: out/certificates.json
