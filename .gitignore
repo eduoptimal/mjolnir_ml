@@ -13,6 +13,7 @@ experiments/
 .venv/
 build/
 dist/
+run_build.sh
 .ipynb_checkpoints/
 .mypy_cache/
 .ruff_cache/
