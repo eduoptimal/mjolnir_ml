@@ -76,7 +76,7 @@ Adm(x) = { release  : every premise holds ∧ engine ROUTE ∧ a release rule fi
 ```
 
 **Law.** `release ⇒ a firing release statement + a clean engine ROUTE`. Every
-property follows (pinned by `tests/test_model.py`). The disposition's
+property follows (pinned by the development test suite). The disposition's
 `guarantee` is **`declared`** (the deciding statements read only stated facts)
 or **`model_backed`** (a deciding statement read estimator output); the
 conformal proof mark is the separate fact `certified` (a prediction-set
@@ -365,7 +365,7 @@ that survives the degenerate policies every scalar metric fails.
 
 ## 6. The value ladder, measured
 
-Four rungs build on the base harness. Each has tests and a measured result.
+Four rungs build on the base harness. Each has a measured result.
 
 ### 6.1 Adaptive conformal for drift (ACI)
 
@@ -383,7 +383,7 @@ Breast cancer, concept drift (45% label flips after row 70):
 | adaptive (ACI) | 0.86 | **0.64** | 0.86 | **1.28** |
 
 `alpha_t` falls 0.100 → 0.037. The repair is real and priced: coverage recovers,
-width grows. The unit test pins the mechanism (error → alpha down → wider set;
+width grows. A development test pins the mechanism (error → alpha down → wider set;
 coverage → alpha up → narrower set) and the monotone recovery direction.
 
 ### 6.2 Policy completeness vs an external hazard oracle
@@ -653,7 +653,7 @@ Verdicts: `release | ask | deny | abstain`. Guarantee tags: **`declared`** /
 `certified`. Assurance tags (derived): `declared`, `model_backed`,
 `pointwise_coverage`, `action_risk_control`, `dual_track`.
 
-## 9. Standalone, vendored, tested
+## 9. Standalone and vendored
 
 `mjolnir_ml` imports nothing else from this repo at runtime. It depends on two
 clones under `mjolnir_ml/vendors/`:
@@ -663,11 +663,22 @@ clones under `mjolnir_ml/vendors/`:
 * `vendors/wire.py` — clone of the disposition engine with exactly one delta: the
   import line.
 
+Install the engine from PyPI (stdlib-only):
+
+```bash
+pip install mjolnir-ml
+pip install "mjolnir-ml[sklearn]"   # optional: sklearn-backed regime floor
+```
+
+The wheel contains only the `mjolnir_ml/` package. Workbooks, examples and
+tests live in the repository and are not part of the PyPI distribution.
+
+For the examples, clone the repository and install the example extra:
+
 ```bash
 git clone https://github.com/eduoptimal/mjolnir_ml.git
 cd mjolnir_ml
 pip install -e ".[examples]"
-python -m pytest tests -q      # 205 tests
 python examples/quickstart.py
 # notebooks (already executed, outputs committed):
 #   examples/random_forest_regressor.ipynb
@@ -708,11 +719,6 @@ mjolnir_ml/
                    conditional independence, journal event study; placebos as
                    twins; markov_class; CausalSession
   vendors/         the two clones
-tests/             205 tests: laws, DSL failures, calibration, ACI, costs,
-                   completeness, certificates, reports, sklearn integration,
-                   notebook validity, readiness, live session/containment/
-                   change control, discovery laws, causal identification,
-                   clones
 examples/          quickstart, five executed notebooks (flywheel, discovery,
                    causal analysis) + causal_analysis.md
 ```
@@ -811,7 +817,7 @@ it):
 `examples/causal_analysis.md` as its extended explanation — etiology declined,
 over-adjustment contained, the paired mechanistic ATE with an exact placebo,
 bounded independence and a Berkson collider, and the audit stream as an
-interrupted time series. `tests/test_causal.py` also pins IV/Wald, DiD and RDD
+interrupted time series. The development suite also pins IV/Wald, DiD and RDD
 on declared synthetic SCMs.
 
 ## License and contact

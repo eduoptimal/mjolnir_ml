@@ -39,6 +39,10 @@ class ReadinessThresholds:
     max_overclaim: int = 0
     min_coverage: float = 0.0
     max_abstain_rate: float = 1.0
+    max_queue_utilization: float | None = None
+    arrival_rate: float | None = None
+    reviewers: int | None = None
+    reviewer_rate: float | None = None
     min_hazard_precision: float | None = None
     min_hazard_recall: float | None = None
     min_replay_rate: float = 0.99
@@ -122,6 +126,8 @@ def readiness(dm: DecisionModel, rows, *, safe, decidable, ledger=None,
     haz = data.get("hazards")
     n = len(rows)
     abstain_rate = data["decisions"]["verdicts"].get(wire.ABSTAIN_W, 0) / n
+    queue_rate = (data["decisions"]["verdicts"].get(wire.ASK, 0)
+                  + data["decisions"]["verdicts"].get(wire.ABSTAIN_W, 0)) / n
     coverage = data["decisions"]["claim_rate"]
 
     gates: list[Gate] = []
@@ -153,6 +159,25 @@ def readiness(dm: DecisionModel, rows, *, safe, decidable, ledger=None,
     gates.append(Gate("abstain_rate", abstain_rate <= th.max_abstain_rate,
                       abstain_rate, th.max_abstain_rate,
                       "a deployment that abstains on everything is not one"))
+    if th.max_queue_utilization is not None:
+        missing = [name for name, value in (
+            ("arrival_rate", th.arrival_rate),
+            ("reviewers", th.reviewers),
+            ("reviewer_rate", th.reviewer_rate),
+        ) if value is None]
+        if missing:
+            gates.append(Gate(
+                "queue_utilization", False, None, th.max_queue_utilization,
+                "queue SLA requires " + ", ".join(missing)))
+        else:
+            lam = queue_rate * th.arrival_rate
+            capacity = th.reviewers * th.reviewer_rate
+            rho = lam / capacity if capacity > 0 else float("inf")
+            gates.append(Gate(
+                "queue_utilization", rho <= th.max_queue_utilization, rho,
+                th.max_queue_utilization,
+                f"ask+abstain demand {lam:g}/unit vs capacity "
+                f"{capacity:g}/unit"))
     if haz is not None:
         if th.min_hazard_precision is not None:
             gates.append(Gate("hazard_precision",
@@ -184,6 +209,7 @@ def readiness(dm: DecisionModel, rows, *, safe, decidable, ledger=None,
         "n": n, "verdicts": data["decisions"]["verdicts"],
         "abstain_causes": data["decisions"]["abstain_causes"],
         "claim_rate": coverage, "abstain_rate": abstain_rate,
+        "queue_rate": queue_rate,
         "pair": pair, "hazards": haz, "predictions": data["predictions"],
         "certificates": ({k: certs[k] for k in ("n", "verified",
                                                "replayable")}

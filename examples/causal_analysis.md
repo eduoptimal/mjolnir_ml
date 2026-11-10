@@ -434,10 +434,9 @@ both occur, and the placebo says we are not fooling ourselves about why."*
 cd mjolnir_ml
 pip install "mjolnir-ml[examples]"    # sklearn + phart + networkx, for the notebook
 python -m jupyter nbconvert --to notebook --execute --inplace examples/causal_analysis.ipynb
-python -m pytest tests/test_causal.py -q      # 25 tests pin the machinery
 ```
 
-The notebook is self-contained (sklearn + stdlib). `tests/test_causal.py` also
+The notebook is self-contained (sklearn + stdlib). The development suite also
 pins the estimators this dataset cannot exercise — IV/Wald (unmeasured
 confounding), two-by-two DiD (parallel trends), and sharp RDD (continuity) — on
 declared synthetic SCMs with known answers.

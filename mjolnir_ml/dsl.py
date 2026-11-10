@@ -36,7 +36,7 @@ harvest statements as DATA. Consequences, all deliberate:
     compiler cannot read cannot be certified. No dict-only fallback — a
     silently dropped premise is the defect class this repo keeps finding.
   * `python -O` is irrelevant: the file text still contains the asserts
-    (pinned by tests/test_dsl.py::test_optimized_interpreter_keeps_policy).
+    (pinned by the test suite).
   * runtime execution of the class body is irrelevant to the IR; the runtime
     `rule()` below exists only so the class body executes cleanly.
 

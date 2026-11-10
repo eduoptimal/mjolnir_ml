@@ -15,7 +15,7 @@ named abstention (never into a release, never into a swallow):
     7. release    ONLY if engine said ROUTE and a release statement fires;
                   ROUTE with no firing release -> abstain(uncovered)
 
-Laws (pinned by tests/test_model.py):
+Laws (pinned by the test suite):
   * fail closed     — uncovered, missing, non-finite, out-of-regime, model
                       exceptions are all abstain, never release.
   * model proposes  — the estimator emits FACTS; verdicts come only from the

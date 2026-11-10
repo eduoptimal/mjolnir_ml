@@ -3,7 +3,7 @@
 # DELTA vs the original (the only one): the import points at the vendored core
 # (`vendors.core.verdict`) instead of `mjolnir_router.core.verdict`, so mjolnir_ml
 # stays standalone. Everything below the import is byte-identical (pinned by
-# tests/test_vendored.py).
+# the test suite).
 """mjolnir_disposition.engine — the wire layer over the ONE rule engine.
 
 THE ENGINE ITSELF LIVES IN `mjolnir_router.core.verdict`. That package keeps its
