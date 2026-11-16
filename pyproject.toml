@@ -10,7 +10,7 @@ readme = "README.md"
 license = "PolyForm-Noncommercial-1.0.0"
 license-files = ["LICENSE"]
 requires-python = ">=3.10"
-dependencies = []
+dependencies = ["cryptography>=42"]
 authors = [
     {name = "Eduardo Perez Denadai", email = "reach@optimality.ai"},
 ]
@@ -30,9 +30,12 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+audit = ["cryptography>=42"]
 sklearn = ["scikit-learn>=1.3"]
 examples = ["scikit-learn>=1.3", "numpy>=1.24", "pandas>=2.0",
             "phart>=2.1", "networkx>=3.3"]
+all = ["cryptography>=42", "scikit-learn>=1.3", "numpy>=1.24",
+       "pandas>=2.0", "phart>=2.1", "networkx>=3.3"]
 
 [tool.setuptools]
 include-package-data = false

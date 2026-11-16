@@ -1,69 +1,80 @@
-"""mjolnir_ml — turn a fitted predictor into a fail-closed decision model.
+"""mjolnir_ml — fail-closed decision models and independent audit replay.
 
-    from mjolnir_ml import dsl, rule, DecisionModel, DecisionPolicyBase, \
-        RELEASE, ASK, DENY, omega_pair
-
-    @dsl
-    class Policy(DecisionPolicyBase):
-        assert lambda amount: amount > 0, "amount_positive"
-        assert rule("auto_release",
-                    when=lambda p_positive, conf: p_positive < 0.05
-                                 and conf >= 0.95,
-                    verdict=RELEASE)
-
-    dm = DecisionModel(fitted_sklearn_estimator, Policy, features=(...))
-    dm.fit_regime(train_rows)                # fail-closed regime floor
-    disp = dm.dispose(row)                   # release | ask | deny | abstain
-
-STANDALONE: imports nothing outside this package at runtime; the frozen rule
-engine and the wire projection are vendored under mjolnir_ml/vendors.
+The top-level package is lazy: importing `mjolnir_ml` does not import the model,
+sklearn, numpy, or the auditor. Developer and auditor paths load only what they
+use.
 """
-from mjolnir_ml.causal import (CausalClaim, CausalError, CausalOracle,
-                                CausalSession, Estimate, Series, Strategy,
-                                Table, do, event_study, series_from_journal)
-from mjolnir_ml.calibration import (AdaptiveKappa, CalibrationError, Kappa,
-                                    REGRESSOR_METHODS, fit_kappa)
-from mjolnir_ml.certificate import (CERT_SCHEMA, CertificateError, certify,
-                                    verify_certificate)
-from mjolnir_ml.costs import Costs, cost_policy
-from mjolnir_ml.feasibility import (FeasibilityError, FeasibilityReport,
-                                    RuleCheck, feasibility)
-from mjolnir_ml.regime import MultivariateRegimeFloor, RegimeError
-from mjolnir_ml.risk import (RiskError, RiskIndex, adverse_event,
-                             crc_threshold, crc_thresholds, fit_risk_index)
-from mjolnir_ml.dsl import (DecisionPolicyBase, DslError, compile_class, dsl,
-                            rule)
-from mjolnir_ml.model import (BindError, DecisionModel, Disposition)
-from mjolnir_ml.hazards import (Hazard, HazardLedger,
-                                 measure_completeness)
-from mjolnir_ml.discovery import (CERTIFIED, CENSUS_VERDICTS, DECLARED,
-                                  DECLINED, REFUTED, Admission, Candidate,
-                                  Census, Containment as DiscoveryContainment,
-                                  DiscoveryDetection, DiscoveryDetector,
-                                  DiscoveryError, DiscoveryEvaluation,
-                                  DiscoveryGate, DiscoverySession,
-                                  KnowledgeLedger, KnowledgeRecord,
-                                  certify_admission,
-                                  default_discovery_detectors,
-                                  verify_admission_certificate)
-from mjolnir_ml.live import (Approval, ApprovalAuthority, ChangeGate,
-                             ChangeSet, Containment, Detection, DetectorSpec,
-                             Evaluation, Journal, LiveSession, Promotion,
-                             Retraction, default_detectors)
-from mjolnir_ml.readiness import (Gate, ReadinessError, ReadinessReport,
-                                  ReadinessThresholds, readiness)
-from mjolnir_ml.pair import (Pair, audit, audit_model, degenerate_controls,
-                             omega_pair, wilson)
-from mjolnir_ml.policy import MODEL_FACTS, Policy, Statement
-from mjolnir_ml.report import report, report_data
-from mjolnir_ml.vendors.wire import (ABSTAIN_W, ASK, DENY_W, RANK, RELEASE,
-                                     WIRE, project, strictest)
+from __future__ import annotations
 
-ASK = ASK            # wire vocabulary: release | ask | deny | abstain
-DENY = DENY_W
-ABSTAIN = ABSTAIN_W
+import importlib
 
 __version__ = "0.1.0"
+
+_WIRE = {
+    "RELEASE": "mjolnir_ml.vendors.wire",
+    "ASK": "mjolnir_ml.vendors.wire",
+    "DENY": "mjolnir_ml.vendors.wire",
+    "ABSTAIN": "mjolnir_ml.vendors.wire",
+    "WIRE": "mjolnir_ml.vendors.wire",
+    "RANK": "mjolnir_ml.vendors.wire",
+    "project": "mjolnir_ml.vendors.wire",
+    "strictest": "mjolnir_ml.vendors.wire",
+    "WarrantLedger": "mjolnir_ml.ledger",
+}
+
+_MODULES = (
+    "mjolnir_ml.abstention",
+    "mjolnir_ml.causal",
+    "mjolnir_ml.calibration",
+    "mjolnir_ml.certificate",
+    "mjolnir_ml.costs",
+    "mjolnir_ml.feasibility",
+    "mjolnir_ml.regime",
+    "mjolnir_ml.risk",
+    "mjolnir_ml.dsl",
+    "mjolnir_ml.model",
+    "mjolnir_ml.hazards",
+    "mjolnir_ml.discovery",
+    "mjolnir_ml.live",
+    "mjolnir_ml.readiness",
+    "mjolnir_ml.pair",
+    "mjolnir_ml.policy",
+    "mjolnir_ml.report",
+    "mjolnir_ml.dev_replay",
+)
+
+_ALIASES = {"DENY": "DENY_W", "ABSTAIN": "ABSTAIN_W"}
+
+_COLLISIONS = {
+    "mjolnir_ml.dsl": "dsl",
+    "mjolnir_ml.readiness": "readiness",
+    "mjolnir_ml.report": "report",
+    "mjolnir_ml.feasibility": "feasibility",
+}
+
+
+def __getattr__(name):
+    if name in _ALIASES:
+        module = importlib.import_module("mjolnir_ml.vendors.wire")
+        value = getattr(module, _ALIASES[name])
+        globals()[name] = value
+        return value
+    if name in _WIRE:
+        module = importlib.import_module(_WIRE[name])
+        value = getattr(module, name)
+        globals()[name] = value
+        return value
+    for module_name in _MODULES:
+        module = importlib.import_module(module_name)
+        if module_name in _COLLISIONS:
+            attr = _COLLISIONS[module_name]
+            globals()[attr] = getattr(module, attr)
+        if hasattr(module, name):
+            value = getattr(module, name)
+            globals()[name] = value
+            return value
+    raise AttributeError(f"module 'mjolnir_ml' has no attribute {name!r}")
+
 
 __all__ = [
     "dsl", "rule", "compile_class", "DecisionPolicyBase", "DslError",
@@ -95,8 +106,10 @@ __all__ = [
     "Strategy", "do", "Table", "Series", "Estimate",
     "event_study", "series_from_journal",
     "Pair", "omega_pair", "wilson", "audit", "audit_model",
+    "RiskControlledReleaseGate", "ReleaseDecision", "AbstentionCertificate",
+    "AbstentionError", "ABSTENTION_SCHEMA",
     "report", "report_data",
     "degenerate_controls",
     "RELEASE", "ASK", "DENY", "ABSTAIN", "WIRE", "RANK", "project",
-    "strictest", "__version__",
+    "strictest", "WarrantLedger", "__version__",
 ]

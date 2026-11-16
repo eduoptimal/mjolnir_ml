@@ -1,7 +1,11 @@
-"""mjolnir_ml.certificate — signed, third-party-replayable decision proofs.
+"""mjolnir_ml.certificate — developer-facing signed decision proofs.
 
-A certificate is the product of this package: one dict that an auditor can
-check WITHOUT the learner, the training data, or this repository's live stack.
+This is the issuer/developer surface. The auditor-facing replay path is
+``mjolnir_ml.auditor``: it consumes a self-contained Ed25519-signed bundle and
+does not import the live model or `DecisionModel`.
+
+A certificate is one dict that a developer can verify locally without the
+learner. For third-party audit, use a signed bundle and ``WarrantLedger.audit``.
 
     cert = certify(disposition, key=b"audit-key")      # HMAC-SHA256
     verify_certificate(cert, key=b"audit-key", policy=Policy)   # True

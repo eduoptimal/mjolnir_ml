@@ -24,7 +24,6 @@ import time
 from dataclasses import dataclass, field
 
 from mjolnir_ml.model import DecisionModel
-from mjolnir_ml.report import report_data
 from mjolnir_ml.vendors import wire
 
 
@@ -119,6 +118,7 @@ def readiness(dm: DecisionModel, rows, *, safe, decidable, ledger=None,
                              "and non-empty")
     th = thresholds or ReadinessThresholds()
 
+    from mjolnir_ml.report import report_data
     data = report_data(dm, rows, title=title, safe=safe, decidable=decidable,
                        ledger=ledger, key=key, sample=0, threshold=threshold)
     pair = data.get("pair", {}).get("pair", {})

@@ -9,7 +9,6 @@ htmlcov/
 .mj/
 .mjignore
 .DS_Store
-experiments/
 .venv/
 build/
 dist/
@@ -18,3 +17,10 @@ run_build.sh
 .mypy_cache/
 .ruff_cache/
 tests/
+
+# Research tree (code, experiments, examples, data)
+research/
+# Anything with a leading dot is ignored by default, but we can be explicit
+.*
+# except for .gitignore itself
+!.gitignore
