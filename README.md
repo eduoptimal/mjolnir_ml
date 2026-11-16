@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/mjml.png" alt="mjolnir_ml" width="420">
+  <img src="https://github.com/eduoptimal/mjolnir_ml/blob/main/assets/mjml.png?raw=true" alt="mjolnir_ml" width="420">
 </p>
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](pyproject.toml)
+[![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](pyproject.toml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 [![Tests](https://img.shields.io/badge/tests-401%20passing-brightgreen.svg)](#validation)
 [![Audit coverage](https://img.shields.io/badge/audit%20coverage-100%25-brightgreen.svg)](#validation)

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mjolnir-ml"
-version = "0.1.0"
+version = "0.1.1"
 description = "Ω-certifiability harness: turn a fitted predictor (sklearn first) into a fail-closed decision model via @dsl policies."
 readme = "README.md"
 license = "PolyForm-Noncommercial-1.0.0"
