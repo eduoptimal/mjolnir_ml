@@ -2,8 +2,9 @@
 
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](pyproject.toml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
-[![Tests](https://img.shields.io/badge/tests-220%20passing-brightgreen.svg)](#validation)
-[![Coverage](https://img.shields.io/badge/coverage-86%25-yellowgreen.svg)](#validation)
+[![Tests](https://img.shields.io/badge/tests-243%20passing-brightgreen.svg)](#validation)
+[![Audit coverage](https://img.shields.io/badge/audit%20coverage-100%25-brightgreen.svg)](#validation)
+[![Coverage](https://img.shields.io/badge/package%20coverage-90%25-yellowgreen.svg)](#validation)
 [![Audit](https://img.shields.io/badge/audit-Ed25519%20replay-black.svg)](#developer-and-auditor-surfaces)
 [![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial-orange.svg)](LICENSE)
 
@@ -229,7 +230,7 @@ python -m pytest tests -q
 python -m pytest tests -q --cov=mjolnir_ml --cov-report=term-missing
 ```
 
-Validation result: **220 tests passed, 2 skipped, 86% line coverage**.
+Validation result: **243 tests passed, 2 skipped**. Auditor path: **100% line coverage**. Full package: **90% line coverage**.
 
 ## Scope
 

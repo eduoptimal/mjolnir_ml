@@ -112,8 +112,6 @@ def _eval(node: ast.AST, env: dict):
                 ok = left in right
             elif isinstance(op, ast.NotIn):
                 ok = left not in right
-            else:
-                raise PolicyIRError(f"disallowed comparison: {type(op).__name__}")
             if not ok:
                 return False
             left = right

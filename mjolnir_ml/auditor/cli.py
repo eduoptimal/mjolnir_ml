@@ -18,8 +18,6 @@ def main(argv=None):
     verify.add_argument("--json", action="store_true")
     verify.add_argument("--allow-unsigned", action="store_true")
     args = parser.parse_args(argv)
-    if args.command != "verify":
-        parser.error("unknown command")
     try:
         report = verify_bundle(
             load_bundle(args.bundle), load_trust(args.trust),
@@ -32,7 +30,3 @@ def main(argv=None):
     if not args.json and report.errors:
         print("\n".join(report.errors), file=sys.stderr)
     return report.exit_code
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
