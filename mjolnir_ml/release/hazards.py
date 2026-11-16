@@ -1,4 +1,4 @@
-"""mjolnir_ml.hazards — an EXTERNAL hazard oracle + completeness measurement.
+"""mjolnir_ml.release.hazards — an EXTERNAL hazard oracle + completeness measurement.
 
 The certifiability contract turns "is the policy complete?" — which is
 not solvable — into a measured, bounded number:
@@ -27,8 +27,8 @@ import hashlib
 import json
 from dataclasses import dataclass
 
-from mjolnir_ml.pair import wilson
-from mjolnir_ml.vendors import wire
+from mjolnir_ml.release.pair import wilson
+from mjolnir_ml.core import wire
 
 
 @dataclass(frozen=True)

@@ -1,4 +1,4 @@
-"""mjolnir_ml.model — DecisionModel: learner + policy + κ -> fail-closed disposer.
+"""mjolnir_ml.core.model — DecisionModel: learner + policy + κ -> fail-closed disposer.
 
 THE TRANSFORM this package exists for: a predictor answers "what will happen";
 a decision model answers "may this run". The weights never change; the
@@ -61,10 +61,10 @@ import time
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
-from mjolnir_ml.policy import MODEL_FACTS, Policy
-from mjolnir_ml.regime import MultivariateRegimeFloor, RegimeError
-from mjolnir_ml.vendors import wire
-from mjolnir_ml.vendors.core.verdict import UNSTATED, Verdict, evaluate
+from mjolnir_ml.core.policy import MODEL_FACTS, Policy
+from mjolnir_ml.calibration.regime import MultivariateRegimeFloor, RegimeError
+from mjolnir_ml.core import wire
+from mjolnir_ml.core.verdict import UNSTATED, Verdict, evaluate
 
 _MAX_MSG = 120
 
@@ -264,8 +264,6 @@ class DecisionModel:
                     hint = " (lo/hi are regressor interval facts)"
                 elif unknown & {"p_positive"} and is_clf:
                     hint = " (p_positive is a binary-classifier fact)"
-                elif unknown & {"certified", "set_size"} and not is_clf:
-                    hint = " (certified/set_size are classifier set facts)"
                 raise BindError(
                     f"policy statement {s.code!r} requires "
                     f"{sorted(unknown)}; available facts for this estimator: "
@@ -303,7 +301,7 @@ class DecisionModel:
         alpha_t moves from observed miscoverage, so `observe(row, y)` after a
         decision restores coverage under drift. gamma is the step size;
         window bounds the score memory."""
-        from mjolnir_ml.calibration import fit_kappa as _fit_kappa
+        from mjolnir_ml.calibration.calibration import fit_kappa as _fit_kappa
         if group is not None and group not in self.features:
             raise BindError(
                 f"calibration group {group!r} is not an input feature "
@@ -333,7 +331,7 @@ class DecisionModel:
         A policy that requires one of them and has no risk index abstains on
         the missing fact. `alpha_release`/`alpha_deny` are the per-action risk
         budgets; `group` is a feature for per-region thresholds."""
-        from mjolnir_ml.risk import RiskError, adverse_event, fit_risk_index
+        from mjolnir_ml.calibration.risk import RiskError, adverse_event, fit_risk_index
         if estimator is None:
             raise BindError(
                 "calibrate_risk needs a fitted crossing estimator "
@@ -633,15 +631,12 @@ class DecisionModel:
                        "prediction (uncovered is abstain, never release)")
                 reason = "uncovered"
             else:
-                st = next((self.policy.statement(c) for c in codes
-                           if c in _codes(self.policy)), None)
-                if st is not None:
-                    vals = ", ".join(f"{k}={facts.get(k)!r}"
-                                     for k in st.requires)
-                    say = (f"cannot decide: premise {st.code} does not hold "
-                           f"({vals})")
-                else:
-                    say = "cannot decide: " + (", ".join(codes) or "abstained")
+                st = next(self.policy.statement(c) for c in codes
+                           if c in _codes(self.policy))
+                vals = ", ".join(f"{k}={facts.get(k)!r}"
+                                 for k in st.requires)
+                say = (f"cannot decide: premise {st.code} does not hold "
+                       f"({vals})")
                 reason = ", ".join(codes) or "abstained"
             guarantee = ("model_backed" if self.policy.uses_model_facts(
                 [c for c in codes if c in _codes(self.policy)]) else "declared")

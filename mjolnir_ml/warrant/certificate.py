@@ -1,4 +1,4 @@
-"""mjolnir_ml.certificate — developer-facing signed decision proofs.
+"""mjolnir_ml.warrant.certificate — developer-facing signed decision proofs.
 
 This is the issuer/developer surface. The auditor-facing replay path is
 ``mjolnir_ml.auditor``: it consumes a self-contained Ed25519-signed bundle and
@@ -52,10 +52,10 @@ import json
 import time
 from collections.abc import Mapping
 
-from mjolnir_ml.model import (Disposition, _assurance, _claim_digest,
+from mjolnir_ml.core.model import (Disposition, _assurance, _claim_digest,
                               _digest_parts)
-from mjolnir_ml.policy import Policy
-from mjolnir_ml.vendors import wire
+from mjolnir_ml.core.policy import Policy
+from mjolnir_ml.core import wire
 
 CERT_SCHEMA = "mjolnir.ml.certificate/1"
 SIG_SCHEME = "hmac-sha256"

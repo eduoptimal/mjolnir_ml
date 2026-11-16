@@ -1,4 +1,4 @@
-"""mjolnir_ml.feasibility — are the declared rules reachable at all?
+"""mjolnir_ml.release.feasibility — are the declared rules reachable at all?
 
 A policy is a contract, and a contract with a rule that can never fire is
 defective: the audit sees `deny = 0` but cannot tell "no such case today" from
@@ -25,7 +25,7 @@ from __future__ import annotations
 import itertools
 from dataclasses import dataclass
 
-from mjolnir_ml.model import DecisionModel, Disposition
+from mjolnir_ml.core.model import DecisionModel, Disposition
 
 _NUMERIC_PROBE = ("lo", "hi", "p_event", "pred", "conf", "p_positive",
                   "set_size")

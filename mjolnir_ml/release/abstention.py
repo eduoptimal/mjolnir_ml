@@ -16,9 +16,9 @@ import math
 import random
 from dataclasses import dataclass
 
-from mjolnir_ml.pair import omega_pair
-from mjolnir_ml.risk import crc_threshold
-from mjolnir_ml.vendors import wire
+from mjolnir_ml.release.pair import omega_pair
+from mjolnir_ml.calibration.risk import crc_threshold
+from mjolnir_ml.core import wire
 
 ABSTENTION_SCHEMA = "mjolnir.ml.abstention/1"
 
@@ -175,8 +175,6 @@ class RiskControlledReleaseGate:
         best_upper = 1.0
         for tau in sorted(set(scores), reverse=True):
             selected = [i for i, s in enumerate(scores) if s >= tau]
-            if not selected:
-                continue
             cov = len(selected) / len(scores)
             upper = _cluster_upper(scores, outcomes, clusters, tau,
                                    self.delta, self.draws, self.seed)

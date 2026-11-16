@@ -1,4 +1,4 @@
-"""mjolnir_ml.policy — the ONE canonical IR: statements, digest, engine compile.
+"""mjolnir_ml.core.policy — the ONE canonical IR: statements, digest, engine compile.
 
 Every frontend (the @dsl class decorator, a future JSON loader) produces THIS
 shape and nothing else. The digest is over canonical JSON of the IR — the
@@ -6,7 +6,7 @@ table IS its digest, so two environments can prove they dispose by the same
 policy, and a mismatch is a hard error rather than a silent drift.
 
 Engine compile is two-phase (see dsl.py): premises and ask/deny become
-`vendors.core.verdict.Rule` objects for `evaluate`; release statements are
+`core.verdict.Rule` objects for `evaluate`; release statements are
 kept separate and are only consulted when the engine returns ROUTE.
 """
 from __future__ import annotations
@@ -14,8 +14,8 @@ from __future__ import annotations
 import hashlib
 import json
 
-from mjolnir_ml.vendors import wire
-from mjolnir_ml.vendors.core.verdict import (ABSTAIN, DENY, ESCALATE, ROUTE,
+from mjolnir_ml.core import wire
+from mjolnir_ml.core.verdict import (ABSTAIN, DENY, ESCALATE, ROUTE,
                                              UNSTATED, Rule, _Declared,
                                              evaluate)
 

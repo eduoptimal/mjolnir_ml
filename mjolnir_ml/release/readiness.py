@@ -1,4 +1,4 @@
-"""mjolnir_ml.readiness — the one-shot deployment gate. No state.
+"""mjolnir_ml.release.readiness — the one-shot deployment gate. No state.
 
 `readiness(dm, rows, ...)` answers exactly one question: *may this
 (estimator, policy, calibration) triple be deployed?* It disposes a held-out
@@ -23,8 +23,8 @@ import json
 import time
 from dataclasses import dataclass, field
 
-from mjolnir_ml.model import DecisionModel
-from mjolnir_ml.vendors import wire
+from mjolnir_ml.core.model import DecisionModel
+from mjolnir_ml.core import wire
 
 
 class ReadinessError(ValueError):
@@ -118,7 +118,7 @@ def readiness(dm: DecisionModel, rows, *, safe, decidable, ledger=None,
                              "and non-empty")
     th = thresholds or ReadinessThresholds()
 
-    from mjolnir_ml.report import report_data
+    from mjolnir_ml.release.report import report_data
     data = report_data(dm, rows, title=title, safe=safe, decidable=decidable,
                        ledger=ledger, key=key, sample=0, threshold=threshold)
     pair = data.get("pair", {}).get("pair", {})

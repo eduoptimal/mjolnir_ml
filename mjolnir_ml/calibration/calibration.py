@@ -1,4 +1,4 @@
-"""mjolnir_ml.calibration — κ: the calibrated trust index over a learner.
+"""mjolnir_ml.calibration.calibration — κ: the calibrated trust index over a learner.
 
 THE LOAD-BEARING IDEA: what a learner is
 allowed to *claim* is not its softmax. It is a finite-sample guarantee about
@@ -58,8 +58,8 @@ from __future__ import annotations
 
 import math
 
-from mjolnir_ml._digest import digest as _digest
-from mjolnir_ml._digest import estimator_digest as _estimator_digest
+from mjolnir_ml.core.digest import digest as _digest
+from mjolnir_ml.core.digest import estimator_digest as _estimator_digest
 
 
 def _scalar(v):

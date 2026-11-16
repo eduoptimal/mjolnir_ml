@@ -1,7 +1,7 @@
 # CLONE of src/mjolnir_disposition/engine.py.
 #
 # DELTA vs the original (the only one): the import points at the vendored core
-# (`vendors.core.verdict`) instead of `mjolnir_router.core.verdict`, so mjolnir_ml
+# (`core.verdict`) instead of `mjolnir_router.core.verdict`, so mjolnir_ml
 # stays standalone. Everything below the import is byte-identical (pinned by
 # the test suite).
 """mjolnir_disposition.engine — the wire layer over the ONE rule engine.
@@ -19,7 +19,7 @@ a second engine.
 """
 from __future__ import annotations
 
-from mjolnir_ml.vendors.core.verdict import (ABSTAIN, DENY, ESCALATE,  # noqa: F401
+from mjolnir_ml.core.verdict import (ABSTAIN, DENY, ESCALATE,  # noqa: F401
                                              ROUTE, UNSTATED, VERDICTS,
                                              _Declared, Rule, Verdict,
                                              evaluate)

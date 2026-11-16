@@ -3,7 +3,7 @@ from __future__ import annotations
 
 
 def replay_local(disposition, row, policy):
-    from mjolnir_ml.policy import Policy
+    from mjolnir_ml.core.policy import Policy
     if isinstance(policy, type):
         policy = policy.policy()
     if isinstance(policy, dict):

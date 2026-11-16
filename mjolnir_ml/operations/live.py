@@ -1,4 +1,4 @@
-"""mjolnir_ml.live — the flywheel: a journaled, read-mostly deployment session.
+"""mjolnir_ml.operations.live — the flywheel: a journaled, read-mostly deployment session.
 
 Three operations are easy to confuse and are kept separate on purpose:
 
@@ -39,10 +39,10 @@ from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from mjolnir_ml.model import DecisionModel, Disposition, _model_digest
-from mjolnir_ml.pair import omega_pair
-from mjolnir_ml.policy import Policy
-from mjolnir_ml.vendors import wire
+from mjolnir_ml.core.model import DecisionModel, Disposition, _model_digest
+from mjolnir_ml.release.pair import omega_pair
+from mjolnir_ml.core.policy import Policy
+from mjolnir_ml.core import wire
 
 SCHEMA = "mjolnir.ml.live/1"
 

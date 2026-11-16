@@ -1,10 +1,12 @@
-# mjolnir_ml
+<p align="center">
+  <img src="assets/mjml.png" alt="mjolnir_ml" width="420">
+</p>
 
 [![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](pyproject.toml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
-[![Tests](https://img.shields.io/badge/tests-243%20passing-brightgreen.svg)](#validation)
+[![Tests](https://img.shields.io/badge/tests-401%20passing-brightgreen.svg)](#validation)
 [![Audit coverage](https://img.shields.io/badge/audit%20coverage-100%25-brightgreen.svg)](#validation)
-[![Coverage](https://img.shields.io/badge/package%20coverage-90%25-yellowgreen.svg)](#validation)
+[![Coverage](https://img.shields.io/badge/package%20coverage-100%25-yellowgreen.svg)](#validation)
 [![Audit](https://img.shields.io/badge/audit-Ed25519%20replay-black.svg)](#developer-and-auditor-surfaces)
 [![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial-orange.svg)](LICENSE)
 
@@ -114,7 +116,7 @@ spec version, and Ed25519 signature. It is self-contained.
 
 ```python
 from mjolnir_ml import WarrantLedger
-from mjolnir_ml.signing import key_id, public_key_b64
+from mjolnir_ml.warrant.signing import key_id, public_key_b64
 
 public_key = signing_key.public_key()
 trust = {
@@ -166,8 +168,18 @@ python -m mjolnir_ml.auditor verify decision.bundle.json \
 | Auditor / disposer | `WarrantLedger.from_bundle(...).audit()`, `python -m mjolnir_ml.auditor` | **never** |
 
 The auditor path has its own canonicalization, policy-IR evaluator, and replay
-logic. It does not import `mjolnir_ml.model`, `mjolnir_ml.policy`, `sklearn`, or
-`numpy`.
+logic. It does not import the model, policy implementation, or scientific stack.
+
+## Package layout
+
+| Package | Responsibility |
+|---|---|
+| `mjolnir_ml.core` | policy, DSL, canonical model, frozen verdict/wire kernel, canonical JSON |
+| `mjolnir_ml.calibration` | conformal calibration, risk, regime |
+| `mjolnir_ml.release` | gates, feasibility, hazards, pair, reporting |
+| `mjolnir_ml.operations` | live operation, discovery, causal analysis |
+| `mjolnir_ml.warrant` | certificates, issuance, ledger, signing |
+| `mjolnir_ml.auditor` | independent public-key replay |
 
 ## Core guarantees
 
@@ -230,7 +242,7 @@ python -m pytest tests -q
 python -m pytest tests -q --cov=mjolnir_ml --cov-report=term-missing
 ```
 
-Validation result: **243 tests passed, 2 skipped**. Auditor path: **100% line coverage**. Full package: **90% line coverage**.
+Validation result: **401 tests passed, 2 skipped**. Auditor path: **100% line coverage**. Full package: **100% line coverage**.
 
 ## Scope
 

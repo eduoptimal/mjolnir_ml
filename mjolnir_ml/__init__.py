@@ -11,51 +11,51 @@ import importlib
 __version__ = "0.1.0"
 
 _WIRE = {
-    "RELEASE": "mjolnir_ml.vendors.wire",
-    "ASK": "mjolnir_ml.vendors.wire",
-    "DENY": "mjolnir_ml.vendors.wire",
-    "ABSTAIN": "mjolnir_ml.vendors.wire",
-    "WIRE": "mjolnir_ml.vendors.wire",
-    "RANK": "mjolnir_ml.vendors.wire",
-    "project": "mjolnir_ml.vendors.wire",
-    "strictest": "mjolnir_ml.vendors.wire",
-    "WarrantLedger": "mjolnir_ml.ledger",
+    "RELEASE": "mjolnir_ml.core.wire",
+    "ASK": "mjolnir_ml.core.wire",
+    "DENY": "mjolnir_ml.core.wire",
+    "ABSTAIN": "mjolnir_ml.core.wire",
+    "WIRE": "mjolnir_ml.core.wire",
+    "RANK": "mjolnir_ml.core.wire",
+    "project": "mjolnir_ml.core.wire",
+    "strictest": "mjolnir_ml.core.wire",
+    "WarrantLedger": "mjolnir_ml.warrant.ledger",
 }
 
 _MODULES = (
-    "mjolnir_ml.abstention",
-    "mjolnir_ml.causal",
-    "mjolnir_ml.calibration",
-    "mjolnir_ml.certificate",
-    "mjolnir_ml.costs",
-    "mjolnir_ml.feasibility",
-    "mjolnir_ml.regime",
-    "mjolnir_ml.risk",
-    "mjolnir_ml.dsl",
-    "mjolnir_ml.model",
-    "mjolnir_ml.hazards",
-    "mjolnir_ml.discovery",
-    "mjolnir_ml.live",
-    "mjolnir_ml.readiness",
-    "mjolnir_ml.pair",
-    "mjolnir_ml.policy",
-    "mjolnir_ml.report",
-    "mjolnir_ml.dev_replay",
+    "mjolnir_ml.release.abstention",
+    "mjolnir_ml.operations.causal",
+    "mjolnir_ml.calibration.calibration",
+    "mjolnir_ml.warrant.certificate",
+    "mjolnir_ml.release.costs",
+    "mjolnir_ml.release.feasibility",
+    "mjolnir_ml.calibration.regime",
+    "mjolnir_ml.calibration.risk",
+    "mjolnir_ml.core.dsl",
+    "mjolnir_ml.core.model",
+    "mjolnir_ml.release.hazards",
+    "mjolnir_ml.operations.discovery",
+    "mjolnir_ml.operations.live",
+    "mjolnir_ml.release.readiness",
+    "mjolnir_ml.release.pair",
+    "mjolnir_ml.core.policy",
+    "mjolnir_ml.release.report",
+    "mjolnir_ml.warrant.dev_replay",
 )
 
 _ALIASES = {"DENY": "DENY_W", "ABSTAIN": "ABSTAIN_W"}
 
 _COLLISIONS = {
-    "mjolnir_ml.dsl": "dsl",
-    "mjolnir_ml.readiness": "readiness",
-    "mjolnir_ml.report": "report",
-    "mjolnir_ml.feasibility": "feasibility",
+    "mjolnir_ml.core.dsl": "dsl",
+    "mjolnir_ml.release.readiness": "readiness",
+    "mjolnir_ml.release.report": "report",
+    "mjolnir_ml.release.feasibility": "feasibility",
 }
 
 
 def __getattr__(name):
     if name in _ALIASES:
-        module = importlib.import_module("mjolnir_ml.vendors.wire")
+        module = importlib.import_module("mjolnir_ml.core.wire")
         value = getattr(module, _ALIASES[name])
         globals()[name] = value
         return value

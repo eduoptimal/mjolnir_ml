@@ -11,7 +11,7 @@ class WarrantLedger:
 
     @classmethod
     def issue(cls, disposition, policy, row, signer, **kwargs):
-        from mjolnir_ml.issue import issue_bundle
+        from mjolnir_ml.warrant.issue import issue_bundle
         return cls(issue_bundle(disposition, policy, row, signer, **kwargs))
 
     @classmethod

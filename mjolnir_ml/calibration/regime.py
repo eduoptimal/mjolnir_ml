@@ -1,4 +1,4 @@
-"""mjolnir_ml.regime — multivariate regime floors with a conformal cutoff.
+"""mjolnir_ml.calibration.regime — multivariate regime floors with a conformal cutoff.
 
 `fit_regime(rows)` records independent per-feature min/max boxes. That is a
 sound *necessary* condition but a poor multivariate support test: correlated
@@ -26,8 +26,8 @@ from __future__ import annotations
 
 import math
 
-from mjolnir_ml._digest import digest as _digest
-from mjolnir_ml._digest import estimator_digest as _estimator_digest
+from mjolnir_ml.core.digest import digest as _digest
+from mjolnir_ml.core.digest import estimator_digest as _estimator_digest
 
 
 class RegimeError(ValueError):

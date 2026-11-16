@@ -1,4 +1,4 @@
-"""mjolnir_ml.risk — risk-controlled decisions (the second guarantee).
+"""mjolnir_ml.calibration.risk — risk-controlled decisions (the second guarantee).
 
 `calibration.py` answers a COVERAGE question: where will Y lie for this row?
 This module answers a DECISION question: if I act on this cohort, is the risk
@@ -33,8 +33,8 @@ from __future__ import annotations
 
 import math
 
-from mjolnir_ml._digest import digest as _digest
-from mjolnir_ml._digest import estimator_digest as _estimator_digest
+from mjolnir_ml.core.digest import digest as _digest
+from mjolnir_ml.core.digest import estimator_digest as _estimator_digest
 
 
 class RiskError(ValueError):
@@ -174,15 +174,11 @@ def crc_thresholds(scores, events, alpha_release: float = 0.10,
     if best is not None:
         return uniq[best[0]], uniq[best[1]]
 
-    # One action may be certifiable while the other is not.
+    # One action may be certifiable while the other is not. (Both non-empty
+    # already returned above: a certifiable release sets best_i and a
+    # certifiable deny then completes the ordered pair in the joint loop.)
     rel = [i for i in range(len(uniq)) if prefix[i][2] <= alpha_release]
     den = [j for j in range(len(uniq)) if suffix[j][2] <= alpha_deny]
-    if rel and den:
-        i = max(rel, key=lambda k: (prefix[k][1], -k))
-        j = max(den, key=lambda k: (suffix[k][1], k))
-        if prefix[i][1] >= suffix[j][1]:
-            return uniq[i], None
-        return None, uniq[j]
     if rel:
         i = max(rel, key=lambda k: (prefix[k][1], -k))
         return uniq[i], None

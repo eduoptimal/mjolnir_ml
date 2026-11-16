@@ -1,4 +1,4 @@
-"""mjolnir_ml.report — one comprehensive text/table report for a decision run.
+"""mjolnir_ml.release.report — one comprehensive text/table report for a decision run.
 
 `report(dm, rows, ...)` answers, in one artifact:
 
@@ -16,12 +16,12 @@ from __future__ import annotations
 
 import time
 
-from mjolnir_ml.certificate import certify, verify_certificate
-from mjolnir_ml.feasibility import feasibility_from_dispositions
-from mjolnir_ml.hazards import measure_completeness as _measure_completeness
-from mjolnir_ml.model import DecisionModel, Disposition
-from mjolnir_ml.pair import audit
-from mjolnir_ml.vendors import wire
+from mjolnir_ml.warrant.certificate import certify, verify_certificate
+from mjolnir_ml.release.feasibility import feasibility_from_dispositions
+from mjolnir_ml.release.hazards import measure_completeness as _measure_completeness
+from mjolnir_ml.core.model import DecisionModel, Disposition
+from mjolnir_ml.release.pair import audit
+from mjolnir_ml.core import wire
 
 _HARNESS = ("missing:", "invalid:", "out_of_regime", "regime_not_fitted",
             "model_error", "invalid_prediction")
@@ -191,7 +191,7 @@ def report_data(dm: DecisionModel, rows, *, title="Decision report",
 
 
 def _degenerate(safe, decidable):
-    from mjolnir_ml.pair import degenerate_controls
+    from mjolnir_ml.release.pair import degenerate_controls
     return degenerate_controls(safe, decidable)
 
 

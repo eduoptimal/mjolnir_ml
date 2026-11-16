@@ -5,12 +5,12 @@ import time
 
 from mjolnir_ml.auditor.bundle import BUNDLE_SCHEMA, REPLAY_SPEC
 from mjolnir_ml.auditor.canonical import canonical_bytes, digest, row_digest
-from mjolnir_ml.signing import key_id, sign
+from mjolnir_ml.warrant.signing import key_id, sign
 
 
 def issue_bundle(disposition, policy, row, signer, *, issuer="mjolnir_ml"):
-    from mjolnir_ml.certificate import certify
-    from mjolnir_ml.policy import Policy
+    from mjolnir_ml.warrant.certificate import certify
+    from mjolnir_ml.core.policy import Policy
 
     if isinstance(policy, type):
         policy = policy.policy()

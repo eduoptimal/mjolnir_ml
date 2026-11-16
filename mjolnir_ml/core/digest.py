@@ -1,4 +1,4 @@
-"""mjolnir_ml._digest — content addressing shared by every calibrated index.
+"""mjolnir_ml.core.digest — content addressing shared by every calibrated index.
 
 Digests are over canonical JSON (sorted keys, no whitespace) so a table and
 its digest cannot drift. Estimator digests include the fitted-state attributes

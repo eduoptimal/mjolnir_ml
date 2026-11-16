@@ -1,4 +1,4 @@
-"""mjolnir_ml.discovery — the discovery loop: journaled, evidence-gated
+"""mjolnir_ml.operations.discovery — the discovery loop: journaled, evidence-gated
 admission of NEW knowledge over a claim corpus.
 
 The flywheel (`live.py`) answers *may this version keep running* over live
@@ -57,8 +57,8 @@ import hmac
 from collections import Counter
 from dataclasses import dataclass, field, replace
 
-from mjolnir_ml._digest import digest as _digest
-from mjolnir_ml.live import Approval, Journal, _canonical, _now, _sha
+from mjolnir_ml.core.digest import digest as _digest
+from mjolnir_ml.operations.live import Approval, Journal, _canonical, _now, _sha
 
 SCHEMA = "mjolnir.ml.discovery/1"
 CERT_SCHEMA = "mjolnir.ml.discovery.certificate/1"

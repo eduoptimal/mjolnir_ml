@@ -1,4 +1,4 @@
-"""mjolnir_ml.causal — the causal layer: identification strategies as
+"""mjolnir_ml.operations.causal — the causal layer: identification strategies as
 discoverable capabilities, with do-calculus vocabulary.
 
 The discovery loop (`discovery.py`) admits capabilities when an independent
@@ -67,7 +67,7 @@ import statistics
 from dataclasses import dataclass, field
 from typing import Iterable
 
-from mjolnir_ml.discovery import (CERTIFIED, DECLINED, REFUTED, Candidate,
+from mjolnir_ml.operations.discovery import (CERTIFIED, DECLINED, REFUTED, Candidate,
                                   DiscoveryError, DiscoverySession)
 
 STRATEGIES = ("none", "backdoor", "iv", "did", "rdd", "ci", "its",
@@ -390,7 +390,7 @@ def series_from_journal(journal, *, metric: str = "hazard_release",
     within the recorded batch, which is the right unit for an interrupted time
     series (a batch is one draw from the process, a decision is one row of it).
     """
-    from mjolnir_ml.vendors import wire
+    from mjolnir_ml.core import wire
 
     decisions = journal.payloads("decision")
     outcomes = {p["certificate_id"]: p["y"] for p in journal.payloads("outcome")}
@@ -958,9 +958,6 @@ class StrategyOracle:
             self.estimates[claim_id] = est
             return _verdict(est.lo, est.hi, claim.criterion)
 
-        if not claim.assumptions and claim.kind != "association":
-            return DECLINED, "assumptions_undeclared"
-
         try:
             if claim.kind == "independence":
                 if s.kind != "ci":
@@ -991,8 +988,6 @@ class StrategyOracle:
                 est = _rdd(self._table, claim, s)
             elif claim.kind == "association":
                 est = _assoc(self._table, claim)
-            else:
-                return DECLINED, "strategy_mismatch"
         except _NotIdentified as ex:
             return DECLINED, ex.code
         self.estimates[claim_id] = est

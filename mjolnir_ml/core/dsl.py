@@ -1,4 +1,4 @@
-"""mjolnir_ml.dsl — @dsl: compile a policy class's SOURCE into one canonical IR.
+"""mjolnir_ml.core.dsl — @dsl: compile a policy class's SOURCE into one canonical IR.
 
 AUTHORING (the only runtime-facing surface):
 
@@ -74,7 +74,7 @@ import ast
 import inspect
 import textwrap
 
-from mjolnir_ml.policy import MODEL_FACTS, Policy
+from mjolnir_ml.core.policy import MODEL_FACTS, Policy
 
 __all__ = ["dsl", "rule", "DecisionPolicyBase", "DslError"]
 
@@ -155,8 +155,6 @@ def _check_expr(src_name: str, node: ast.expr, params: tuple, ctx: str) -> str:
     for n in ast.walk(node):
         if type(n) in _REJECTED_NAMES:
             _fail(src_name, n, _REJECTED_NAMES[type(n)] + f" in {ctx}")
-        if isinstance(n, ast.Lambda) and n is not node:
-            _fail(src_name, n, f"nested lambda in {ctx}")
         if not isinstance(n, (*_ALLOWED_EXPR, ast.boolop, ast.operator,
                               ast.unaryop, ast.cmpop, type(node))):
             _fail(src_name, n,

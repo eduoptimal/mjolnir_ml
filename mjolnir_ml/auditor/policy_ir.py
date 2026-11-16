@@ -1,6 +1,6 @@
 """Independent, restricted policy-IR evaluator.
 
-No import from mjolnir_ml.model or mjolnir_ml.policy. Predicates are parsed as
+No import from mjolnir_ml.core.model or mjolnir_ml.core.policy. Predicates are parsed as
 restricted expressions and walked explicitly; Python eval is never used.
 """
 from __future__ import annotations

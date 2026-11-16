@@ -1,4 +1,4 @@
-"""mjolnir_ml.pair — the Ω-certifiability pair for decision dispositions.
+"""mjolnir_ml.release.pair — the Ω-certifiability pair for decision dispositions.
 
 Definition 1 of the companion paper, instantiated for decision models:
 
@@ -21,8 +21,8 @@ from __future__ import annotations
 import math
 from dataclasses import dataclass
 
-from mjolnir_ml.model import Disposition
-from mjolnir_ml.vendors import wire
+from mjolnir_ml.core.model import Disposition
+from mjolnir_ml.core import wire
 
 
 @dataclass(frozen=True)

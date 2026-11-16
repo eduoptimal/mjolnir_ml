@@ -1,4 +1,4 @@
-"""mjolnir_ml.costs — cost-sensitive verdicts (the Chow reject option, priced).
+"""mjolnir_ml.release.costs — cost-sensitive verdicts (the Chow reject option, priced).
 
 A verdict is not free. For a binary risk score p = P(unsafe | x) and declared
 costs
@@ -33,8 +33,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from mjolnir_ml.policy import Policy
-from mjolnir_ml.vendors import wire
+from mjolnir_ml.core.policy import Policy
+from mjolnir_ml.core import wire
 
 
 @dataclass(frozen=True)
