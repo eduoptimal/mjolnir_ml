@@ -12,7 +12,7 @@ htmlcov/
 .venv/
 build/
 dist/
-run_build.sh
+run_pypi_build.sh
 .ipynb_checkpoints/
 .mypy_cache/
 .ruff_cache/
